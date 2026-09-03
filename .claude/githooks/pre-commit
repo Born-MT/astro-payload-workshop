@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+# claude-kit pre-commit secret/vulnerability scan (installed into .claude/githooks).
+#
+# Scans STAGED changes before the commit is created and blocks it if a likely
+# secret or sensitive file is being committed. claude-kit wires this on install
+# by setting `git config core.hooksPath .claude/githooks`. If your repo already
+# used core.hooksPath (e.g. husky), the installer left it alone — add this file
+# to your existing hooks path to enable the scan.
+#
+# Prefers gitleaks or trufflehog if installed; otherwise uses a built-in regex
+# scan of the added lines. To bypass for a single commit (use sparingly):
+#
+#     git commit --no-verify        # or:  SKIP_SECRET_SCAN=1 git commit ...
+#
+# For a deeper audit (dependency CVEs + SAST), run the /security-scan skill.
+
+set -u
+
+if [ "${SKIP_SECRET_SCAN:-}" = "1" ]; then
+  echo "pre-commit: SKIP_SECRET_SCAN=1 set — skipping secret scan." >&2
+  exit 0
+fi
+
+# Nothing staged? Nothing to scan.
+if git diff --cached --quiet; then
+  exit 0
+fi
+
+RED=$'\033[31m'; YELLOW=$'\033[33m'; RESET=$'\033[0m'
+fail=0
+
+# ── 1. Prefer a real scanner if the developer has one installed ────────────
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: scanning staged changes with gitleaks…" >&2
+  if ! gitleaks protect --staged --redact --no-banner; then
+    echo "${RED}pre-commit: gitleaks found potential secrets (see above).${RESET}" >&2
+    fail=1
+  fi
+elif command -v trufflehog >/dev/null 2>&1; then
+  echo "pre-commit: scanning with trufflehog…" >&2
+  if trufflehog --no-update git file://. --since-commit HEAD --only-verified --fail >/dev/null 2>&1; then :; else
+    if [ $? -ne 0 ]; then
+      echo "${RED}pre-commit: trufflehog flagged verified secrets.${RESET}" >&2
+      fail=1
+    fi
+  fi
+fi
+
+# ── 2. Built-in scan (always runs; cheap defense-in-depth) ─────────────────
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+added=$(git diff --cached --unified=0 --diff-filter=ACM | grep -E '^\+' | grep -vE '^\+\+\+')
+
+# 2a. Sensitive files that should never be committed.
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  case "$f" in
+    *.pem|*.key|*.p12|*.pfx|*id_rsa|*id_dsa|*id_ecdsa|*id_ed25519)
+      echo "${RED}pre-commit: refusing to commit sensitive file: $f${RESET}" >&2; fail=1 ;;
+  esac
+  base=$(basename "$f")
+  case "$base" in
+    .env|.env.*)
+      case "$base" in
+        .env.example|.env.sample|.env.template|.env.dist) : ;;  # allow templates
+        *) echo "${RED}pre-commit: refusing to commit env file: $f${RESET}" >&2; fail=1 ;;
+      esac ;;
+  esac
+done <<EOF
+$staged_files
+EOF
+
+# 2b. High-signal secret patterns in the newly added lines.
+patterns='
+private-key|-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----
+aws-access-key-id|AKIA[0-9A-Z]{16}
+aws-secret|aws_secret_access_key["'"'"' ]*[:=]["'"'"' ]*[A-Za-z0-9/+]{40}
+github-token|(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36}
+github-pat|github_pat_[A-Za-z0-9_]{22,}
+slack-token|xox[baprs]-[A-Za-z0-9-]{10,}
+google-api-key|AIza[0-9A-Za-z_-]{35}
+stripe-secret|sk_live_[0-9a-zA-Z]{24,}
+gcp-sa-key|"private_key_id":[[:space:]]*"[0-9a-f]{40}"
+generic-secret-assign|(secret|password|passwd|token|api[_-]?key)["'"'"' ]*[:=]["'"'"' ]*[A-Za-z0-9/+=_-]{16,}
+'
+
+if [ -n "$added" ]; then
+  while IFS='|' read -r name regex; do
+    [ -z "$name" ] && continue
+    hits=$(printf '%s\n' "$added" | grep -nE "$regex" 2>/dev/null)
+    if [ -n "$hits" ]; then
+      echo "${RED}pre-commit: possible ${name} in staged changes:${RESET}" >&2
+      printf '%s\n' "$hits" | sed 's/^/    /' >&2
+      fail=1
+    fi
+  done <<EOF
+$patterns
+EOF
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "" >&2
+  echo "${YELLOW}Commit blocked by pre-commit secret scan.${RESET}" >&2
+  echo "  • Remove the secret and use an environment variable / secret manager." >&2
+  echo "  • False positive? bypass once with:  git commit --no-verify" >&2
+  echo "  • Deeper audit (deps + SAST): run the /security-scan skill." >&2
+  exit 1
+fi
+
+exit 0

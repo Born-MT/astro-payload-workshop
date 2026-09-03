@@ -1,0 +1,34 @@
+---
+/**
+ * WORKED EXAMPLE — the archive page for Services.
+ * WordPress analogy: archive-service.php + a WP_Query.
+ */
+import Base from '@/layouts/Base.astro'
+import ServiceCard from '@/components/ServiceCard.astro'
+import { getDocs } from '@/lib/payload'
+
+const { docs: services } = await getDocs('services', { sort: 'order', limit: 20 })
+---
+
+<Base title="Services">
+  <span class="pill">Worked example</span>
+  <h1>What we do</h1>
+  <p class="lede">
+    This list is fetched from Payload at request time via <code>GET /api/services</code>.
+    Edit a service in the admin panel and refresh this page.
+  </p>
+
+  {
+    services.length === 0 ? (
+      <div class="empty">
+        No services yet. Run <code>pnpm seed</code> in the repo root, or add one in the admin panel.
+      </div>
+    ) : (
+      <div class="grid">
+        {services.map((service) => (
+          <ServiceCard service={service} />
+        ))}
+      </div>
+    )
+  }
+</Base>

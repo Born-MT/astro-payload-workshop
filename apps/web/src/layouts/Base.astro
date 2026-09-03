@@ -1,0 +1,45 @@
+---
+/**
+ * Site shell. WordPress analogy: header.php + footer.php in one file.
+ * Anything between <slot /> is the page content.
+ */
+import '@/styles/global.css'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description = 'Astro + Payload workshop starter' } = Astro.props
+const path = Astro.url.pathname
+const adminUrl = `${import.meta.env.PAYLOAD_URL ?? 'http://localhost:3300'}/admin`
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href))
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content={description} />
+    <title>{title} · Webee Workshop</title>
+    <slot name="head" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="inner">
+        <a class="brand" href="/">Webee<span>.</span></a>
+        <nav>
+          <a href="/" aria-current={isActive('/') ? 'page' : undefined}>Services</a>
+          <a href="/case-studies" aria-current={isActive('/case-studies') ? 'page' : undefined}>Case Studies</a>
+          <a href={adminUrl} target="_blank" rel="noopener">Admin ↗</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>Astro frontend · Payload CMS · Built in the Webee L&amp;D workshop</footer>
+  </body>
+</html>

@@ -1,0 +1,12 @@
+packages:
+  - apps/*
+
+# Native/postinstall scripts that are allowed to run (pnpm 10+ blocks all by default).
+allowBuilds:
+  sharp: true
+  esbuild: true
+  unrs-resolver: true
+onlyBuiltDependencies:
+  - sharp
+  - esbuild
+  - unrs-resolver

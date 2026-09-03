@@ -1,0 +1,28 @@
+---
+/**
+ * WORKED EXAMPLE — the single page for one Service.
+ * WordPress analogy: single-service.php. The `[slug]` in the filename is the
+ * dynamic segment, like WP's rewrite rule for /services/%postname%/.
+ */
+import Base from '@/layouts/Base.astro'
+import { getDocBySlug } from '@/lib/payload'
+
+const { slug } = Astro.params
+const service = slug ? await getDocBySlug('services', slug) : null
+
+if (!service) {
+  return new Response(null, { status: 404, statusText: 'Not found' })
+}
+---
+
+<Base title={service.title} description={service.summary}>
+  <a class="back" href="/">← All services</a>
+  <h1>{service.title}</h1>
+  <div class="meta">
+    <span class="pill ghost">{service.icon}</span>
+    <span>Updated {new Date(service.updatedAt).toLocaleDateString('en-GB')}</span>
+  </div>
+  <div class="prose">
+    <p>{service.summary}</p>
+  </div>
+</Base>

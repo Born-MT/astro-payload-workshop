@@ -1,0 +1,27 @@
+---
+/**
+ * WordPress analogy: a template part (`template-parts/content-service.php`).
+ * Props are typed straight from the CMS. If you rename a field in Payload
+ * and re-run `pnpm generate:types`, this component will fail to typecheck
+ * until you fix it. That is the point.
+ */
+import type { Service } from '@cms/payload-types'
+
+interface Props {
+  service: Service
+}
+
+const { service } = Astro.props
+const icons: Record<NonNullable<Service['icon']>, string> = {
+  code: '</>',
+  design: '◐',
+  commerce: '🛒',
+  growth: '↗',
+}
+---
+
+<a class="card" href={`/services/${service.slug}`}>
+  <span class="pill ghost">{icons[service.icon ?? 'code']}</span>
+  <h3>{service.title}</h3>
+  <p>{service.summary}</p>
+</a>

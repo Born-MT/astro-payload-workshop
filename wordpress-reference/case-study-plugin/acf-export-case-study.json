@@ -1,0 +1,93 @@
+[
+  {
+    "key": "group_case_study",
+    "title": "Case Study details",
+    "location": [[{ "param": "post_type", "operator": "==", "value": "case_study" }]],
+    "fields": [
+      {
+        "key": "field_client",
+        "label": "Client",
+        "name": "client",
+        "type": "text",
+        "required": 1,
+        "instructions": "Client or brand name shown on the card."
+      },
+      {
+        "key": "field_summary",
+        "label": "Summary",
+        "name": "summary",
+        "type": "textarea",
+        "required": 1,
+        "maxlength": 240,
+        "rows": 3,
+        "instructions": "One or two sentences for the listing card."
+      },
+      {
+        "key": "field_project_url",
+        "label": "Live site URL",
+        "name": "project_url",
+        "type": "url",
+        "required": 0
+      },
+      {
+        "key": "field_completed",
+        "label": "Completed on",
+        "name": "completed_on",
+        "type": "date_picker",
+        "required": 1,
+        "return_format": "Y-m-d"
+      },
+      {
+        "key": "field_results",
+        "label": "Results",
+        "name": "results",
+        "type": "repeater",
+        "min": 1,
+        "max": 4,
+        "layout": "table",
+        "button_label": "Add result",
+        "sub_fields": [
+          { "key": "field_result_value", "label": "Value", "name": "value", "type": "text", "required": 1, "placeholder": "+38%" },
+          { "key": "field_result_label", "label": "Label", "name": "label", "type": "text", "required": 1, "placeholder": "Conversion rate" }
+        ]
+      },
+      {
+        "key": "field_services",
+        "label": "Services delivered",
+        "name": "services",
+        "type": "relationship",
+        "post_type": ["service"],
+        "multiple": 1,
+        "return_format": "object",
+        "instructions": "STRETCH CARD: relationship to the Services post type."
+      },
+      {
+        "key": "field_hero",
+        "label": "Hero image",
+        "name": "hero_image",
+        "type": "image",
+        "return_format": "array",
+        "preview_size": "medium",
+        "instructions": "STRETCH CARD: image upload."
+      },
+      {
+        "key": "field_body",
+        "label": "Story",
+        "name": "body",
+        "type": "wysiwyg",
+        "instructions": "STRETCH CARD: rich text. Challenge / approach / outcome."
+      },
+      {
+        "key": "field_seo",
+        "label": "SEO",
+        "name": "seo",
+        "type": "group",
+        "instructions": "STRETCH CARD: meta title + description.",
+        "sub_fields": [
+          { "key": "field_seo_title", "label": "Meta title", "name": "title", "type": "text", "maxlength": 60 },
+          { "key": "field_seo_desc", "label": "Meta description", "name": "description", "type": "textarea", "maxlength": 160, "rows": 2 }
+        ]
+      }
+    ]
+  }
+]

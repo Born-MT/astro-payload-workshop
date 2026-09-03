@@ -1,0 +1,11 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+*.log
+.astro/
+dist/
+.next/
+apps/cms/media/
+apps/cms/payload.db
+apps/cms/payload.db-*

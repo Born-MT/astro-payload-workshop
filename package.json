@@ -1,0 +1,24 @@
+{
+  "name": "webee-astro-payload-workshop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Starter repo for the Webee L&D session: Astro + Payload 3 with Claude Code",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "concurrently -n cms,web -c yellow,cyan \"pnpm --filter cms dev\" \"pnpm --filter web dev\"",
+    "dev:cms": "pnpm --filter cms dev",
+    "dev:web": "pnpm --filter web dev",
+    "seed": "pnpm --filter cms seed",
+    "reset": "pnpm --filter cms reset",
+    "generate:types": "pnpm --filter cms generate:types",
+    "typecheck": "pnpm --filter cms typecheck && pnpm --filter web typecheck",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
