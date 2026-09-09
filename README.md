@@ -36,6 +36,8 @@ docs                  task brief, stretch cards, facilitator guide
 
 Facilitators: [docs/FACILITATOR_GUIDE.md](docs/FACILITATOR_GUIDE.md). The finished version lives on the `solution` branch.
 
+The deck: [docs/SLIDES.html](docs/SLIDES.html) (open in a browser, `N` for notes), the same 25 slides as [docs/From-WordPress-to-Astro-Payload.pptx](docs/From-WordPress-to-Astro-Payload.pptx) for Google Slides, and published at <https://claude.ai/code/artifact/6c2b3bc7-b63a-4a8b-9932-95f0e5ac9d9b>.
+
 ## Commands
 
 | Command | Does |

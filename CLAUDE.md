@@ -26,7 +26,7 @@ Starter for the Webee L&D workshop "Astro + Payload with Claude Code". pnpm mono
 - `apps/cms` — Payload 3 (runs inside Next.js), SQLite, admin at http://localhost:3300/admin, REST at http://localhost:3300/api/<collection>. Only `src/` matters.
 - `apps/web` — Astro 7, server-rendered, http://localhost:4321. Fetches Payload via `src/lib/payload.ts`. Never talks to the DB directly.
 - `wordpress-reference/` — a frozen WordPress feature (CPT + ACF + theme templates). Reference only; it does not run. The workshop task is to port it.
-- `docs/` — task brief, stretch cards, glossary, facilitator guide.
+- `docs/` — task brief, stretch cards, glossary, facilitator guide, the slide deck (`SLIDES.html` is the source; the `.pptx` is a mirror, keep both in sync).
 
 `Services` is the worked example: `apps/cms/src/collections/Services.ts`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/services/[slug].astro`. **Copy its patterns** (public read access, slug hook, typed fetch) for new collections.
 
