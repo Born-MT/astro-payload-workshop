@@ -1,8 +1,8 @@
 # Task brief — Port "Case Studies" from WordPress to Payload + Astro
 
-**Time:** 30 minutes guided, in pairs. One person drives Claude Code, the other reads every diff before it is accepted. Swap roles at the halfway point (the Astro part).
+**Time:** 30 minutes guided, on your own laptop. You drive Claude Code and you are also the reviewer: read every diff before you accept it. Nobody else is checking, so the habit is the check.
 
-**What you are porting:** everything in [`wordpress-reference/`](../wordpress-reference/README.md). Read `README.md` there first — the vocabulary table is your map.
+**What you are porting:** everything in [`wordpress-reference/`](../wordpress-reference/README.md). Read `README.md` there first — the vocabulary table is your map. Keep [GLOSSARY.md](GLOSSARY.md) open for any word you do not recognise.
 
 **How to work:** treat each step as a ticket. Give Claude the step's text, including the acceptance criteria, as your prompt. Use plan mode (`Shift+Tab`) for step 1 so you see the plan before any file changes. Commit after each green step.
 
@@ -52,8 +52,6 @@ Port the three case studies in `wordpress-reference/case-study-plugin/sample-con
 
 ## Step 3 — Archive page (archive-case_study.php → Astro) · ~8 min
 
-**Swap driver/reviewer here.**
-
 Create `apps/web/src/pages/case-studies/index.astro` and `apps/web/src/components/CaseStudyCard.astro`. Use `getDocs` from `@/lib/payload`, sorted by `completedOn` descending. Match what `archive-case_study.php` and `content-case_study.php` render: client pill, title, summary.
 
 **Acceptance criteria**
@@ -85,7 +83,7 @@ Create `apps/web/src/pages/case-studies/[slug].astro`. Use `getDocBySlug`. Rende
 ## Claude Code habits we are practising
 
 1. **Plan mode first** for anything touching more than one file.
-2. **Read the diff** before you accept. The reviewer says "accept" or "no, because…".
+2. **Read the diff** before you accept. Say "accept" or "no, because…" before you press Enter. Out loud is fine.
 3. **Ticket-style prompts**: what, where, acceptance criteria. Paste the step text.
 4. **Commit after each green step.** Ask Claude to write the commit message; check it.
 5. **Ask it to explain** anything you would not be able to reproduce yourself tomorrow.

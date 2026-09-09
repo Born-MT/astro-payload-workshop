@@ -31,6 +31,7 @@ docs                  task brief, stretch cards, facilitator guide
 
 1. [docs/TASK_BRIEF.md](docs/TASK_BRIEF.md) — the core task (ticket-style, with acceptance criteria)
 2. [docs/STRETCH_CARDS.md](docs/STRETCH_CARDS.md) — pick any when the core task is green
+3. [docs/GLOSSARY.md](docs/GLOSSARY.md) — every Astro and Payload word, next to its WordPress word
 3. [wordpress-reference/README.md](wordpress-reference/README.md) — WordPress → Payload/Astro vocabulary
 
 Facilitators: [docs/FACILITATOR_GUIDE.md](docs/FACILITATOR_GUIDE.md). The finished version lives on the `solution` branch.
