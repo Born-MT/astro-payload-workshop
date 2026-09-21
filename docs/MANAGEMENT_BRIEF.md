@@ -23,7 +23,7 @@ Everything is built and tested. Attendees will not lose time to setup on the day
 - The WordPress feature to port, frozen as reference code so the task is concrete.
 - A task brief with acceptance criteria for each step, seven optional stretch exercises for faster attendees, and a facilitator guide with a timing plan and known failure modes.
 - A completed reference solution, committed step by step, for the debrief.
-- A 25-slide presentation with speaker notes ([view it here](https://claude.ai/artifact/EMiU9Cwts4xJ32hqq5KjtN)), including a jargon section that names every Astro and Payload term attendees will meet, each beside its WordPress equivalent.
+- A 25-slide presentation with speaker notes ([view it here](https://claude.ai/artifact/NY9UmLfwZoxMdueYfCgahy)), including a jargon section that names every Astro and Payload term attendees will meet, each beside its WordPress equivalent.
 - A written glossary of the same terms for use during the hands-on and afterwards.
 - A pre-session checklist so every laptop is verified before the day.
 
