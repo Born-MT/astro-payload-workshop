@@ -20,7 +20,7 @@ at your desk before the session, and message the facilitator if anything is ✘.
 
 - [ ] Clone the repo and install:
   ```bash
-  git clone <repo-url> astro-payload-workshop
+  git clone https://github.com/Born-MT/astro-payload-workshop.git astro-payload-workshop
   cd astro-payload-workshop
   pnpm install
   pnpm setup

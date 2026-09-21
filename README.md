@@ -6,7 +6,7 @@ You will port a WordPress "Case Studies" feature to Payload CMS + Astro, driving
 ## Before the day (10 minutes, do this at your desk)
 
 ```bash
-git clone <repo-url> astro-payload-workshop
+git clone https://github.com/Born-MT/astro-payload-workshop.git astro-payload-workshop
 cd astro-payload-workshop
 pnpm install
 pnpm setup        # creates .env files, generates types, seeds the DB
