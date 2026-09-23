@@ -63,6 +63,8 @@ export const Projects: CollectionConfig = {
       maxLength: 240,
       admin: { description: 'One or two sentences for the listing card.' },
     },
+    // Card B — WordPress analogy: ACF Image field, backed by the Media Library.
+    { name: 'heroImage', type: 'upload', relationTo: 'media' },
     { name: 'projectUrl', type: 'text', label: 'Live URL', admin: { position: 'sidebar' } },
     { name: 'repoUrl', type: 'text', label: 'Repository URL', admin: { position: 'sidebar' } },
     {

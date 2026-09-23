@@ -242,6 +242,7 @@ export interface Project {
    * One or two sentences for the listing card.
    */
   summary: string;
+  heroImage?: (number | null) | Media;
   projectUrl?: string | null;
   repoUrl?: string | null;
   completedOn: string;
@@ -442,6 +443,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   client?: T;
   role?: T;
   summary?: T;
+  heroImage?: T;
   projectUrl?: T;
   repoUrl?: T;
   completedOn?: T;

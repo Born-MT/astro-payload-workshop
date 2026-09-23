@@ -1,15 +1,20 @@
 ---
 /** Ported from wordpress-reference/theme/template-parts/content-project.php */
 import type { Project } from '@cms/payload-types'
+import { mediaUrl } from '@/lib/payload'
 
 interface Props {
   project: Project
 }
 
 const { project } = Astro.props
+// Card B: heroImage is `number | Media | null` depending on depth. Guard for the object.
+const hero = typeof project.heroImage === 'object' ? project.heroImage : null
+const thumb = mediaUrl(hero?.sizes?.card?.url ?? hero?.url)
 ---
 
 <a class="card" href={`/projects/${project.slug}`}>
+  {thumb && <img src={thumb} alt={hero?.alt ?? ''} loading="lazy" />}
   <span class="pill">{project.client}</span>
   <h3>{project.title}</h3>
   <p>{project.summary}</p>

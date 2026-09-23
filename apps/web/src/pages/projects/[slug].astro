@@ -1,7 +1,7 @@
 ---
 /** Ported from wordpress-reference/theme/single-project.php */
 import Base from '@/layouts/Base.astro'
-import { getDocBySlug } from '@/lib/payload'
+import { getDocBySlug, mediaUrl } from '@/lib/payload'
 
 const { slug } = Astro.params
 const project = slug ? await getDocBySlug('projects', slug) : null
@@ -13,10 +13,15 @@ if (!project) {
 const completed = new Date(project.completedOn).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 // Card A: relationship items are `number | Service` depending on depth. Only render populated ones.
 const services = (project.services ?? []).filter((s) => typeof s === 'object')
+// Card B
+const hero = typeof project.heroImage === 'object' ? project.heroImage : null
+const heroSrc = mediaUrl(hero?.sizes?.hero?.url ?? hero?.url)
 ---
 
 <Base title={project.title} description={project.summary}>
   <a class="back" href="/projects">← All projects</a>
+
+  {heroSrc && <img class="hero" src={heroSrc} alt={hero?.alt ?? ''} />}
 
   <h1>{project.title}</h1>
   <div class="meta">

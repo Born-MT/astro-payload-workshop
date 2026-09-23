@@ -7,6 +7,8 @@
  * Add your own seed data at the bottom (see the TODO).
  */
 import 'dotenv/config'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { getPayload } from 'payload'
 import config from './payload.config'
 
@@ -171,6 +173,22 @@ async function seed() {
       await payload.update({ collection: 'projects', id: found.docs[0].id, data: { services: relatedServices } })
       payload.logger.info(`Linked services on "${project.title}"`)
     }
+  }
+
+  // Card B: a hero image for the first project, uploaded from a file like WP's media_sideload_image().
+  const heroFile = resolve(dirname(fileURLToPath(import.meta.url)), 'seed-assets/artisan-marketplace.png')
+  const existingHero = await payload.find({ collection: 'media', where: { filename: { equals: 'artisan-marketplace.png' } }, limit: 1 })
+  const hero =
+    existingHero.docs[0] ??
+    (await payload.create({
+      collection: 'media',
+      filePath: heroFile,
+      data: { alt: 'Storefront of the Maltese Artisan Marketplace' },
+    }))
+  const artisan = await payload.find({ collection: 'projects', where: { slug: { equals: 'maltese-artisan-marketplace' } }, limit: 1 })
+  if (artisan.docs[0] && !artisan.docs[0].heroImage) {
+    await payload.update({ collection: 'projects', id: artisan.docs[0].id, data: { heroImage: hero.id } })
+    payload.logger.info('Attached the hero image to "Maltese Artisan Marketplace"')
   }
 
   // 4. Profile global (step 5). Ported from the wp_options rows in sample-content.sql.
