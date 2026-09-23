@@ -37,10 +37,10 @@ The condensed version is in the slides (the "Jargon" slides). This is the full l
 | Word | What it is | WordPress word |
 | --- | --- | --- |
 | **Collection** | A content type, defined in one TypeScript file. Gets a database table, an admin screen and an API endpoint. | Custom Post Type + its ACF field group |
-| **Global** | A single document, not a list. Site settings, header, footer. `/api/globals/header`. | Options page, `get_option()` |
-| **Document** | One row in a collection. One service, one case study. | A post |
+| **Global** | A single document, not a list. Site settings, header, footer, your profile. Defined in `apps/cms/src/globals/`, registered under `globals`, served at `/api/globals/profile`. Step 5 is one. | ACF Options Page, `get_field('x', 'option')` |
+| **Document** | One row in a collection. One service, one project. | A post |
 | **Field** | One column of a collection. Has a `name`, a `type`, and options. | An ACF field |
-| **`slug` (of a collection)** | The collection's identifier: `slug: 'case-studies'`. Sets the table name and the API path. | The post type name in `register_post_type()` |
+| **`slug` (of a collection)** | The collection's identifier: `slug: 'projects'`. Sets the table name and the API path. | The post type name in `register_post_type()` |
 | **`slug` (as a field)** | A field *you* define on the document, used in URLs. Not automatic; the starter has a hook that fills it from the title. | `post_name` |
 | **`useAsTitle`** | Which field the admin list shows as the row title. | `post_title` in the list table |
 | **`admin.group`** | The heading a collection sits under in the admin sidebar. Ours are all in "Content". | Menu position |
@@ -209,3 +209,5 @@ The condensed version is in the slides (the "Jargon" slides). This is the full l
 | **Context** | Everything Claude currently has in view. Long sessions fill it; `/clear` empties it. |
 | **Diff** | The change Claude proposes. You read it before it is applied. The whole point of today. |
 | **Permission** | Claude asks before running commands or editing files outside what you have allowed. Do not blanket-allow. |
+| **verify / the gate** | `pnpm verify N`. Runs the acceptance criteria for steps 0 to N against your running servers and your git log, in order, and stops at the first ✘. `pnpm verify --status` shows where you are. The facilitator reads that, not your screen. |
+| **Step tag** | `(step 1)` … `(step 6)` or `(card A)` … `(card G)` at the end of a commit message. The commit hooks refuse a tagged commit until that step verifies green. Never remove a tag to get past the gate. |

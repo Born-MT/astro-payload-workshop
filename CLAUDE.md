@@ -21,14 +21,15 @@ This project ships a curated skill library in `.claude/skills/`. Each skill carr
 
 ## What this repo is
 
-Starter for the Webee L&D workshop "Astro + Payload with Claude Code". pnpm monorepo:
+Starter for the Webee L&D workshop "Astro + Payload with Claude Code". Each attendee ports a WordPress portfolio to this stack and ends up with their own portfolio site. pnpm monorepo:
 
-- `apps/cms` — Payload 3 (runs inside Next.js), SQLite, admin at http://localhost:3300/admin, REST at http://localhost:3300/api/<collection>. Only `src/` matters.
+- `apps/cms` — Payload 3 (runs inside Next.js), SQLite, admin at http://localhost:3300/admin, REST at http://localhost:3300/api/<collection> and http://localhost:3300/api/globals/<global>. Only `src/` matters.
 - `apps/web` — Astro 7, server-rendered, http://localhost:4321. Fetches Payload via `src/lib/payload.ts`. Never talks to the DB directly.
-- `wordpress-reference/` — a frozen WordPress feature (CPT + ACF + theme templates). Reference only; it does not run. The workshop task is to port it.
-- `docs/` — task brief, stretch cards, glossary, facilitator guide, the slide deck (`SLIDES.html` is the source; the `.pptx` is a mirror, keep both in sync).
+- `wordpress-reference/` — a frozen WordPress portfolio (Project CPT + ACF + theme templates + a Profile options page). Reference only; it does not run. The workshop task is to port it.
+- `docs/` — task brief (the ladder), stretch cards, glossary, facilitator guide, the slide deck (`SLIDES.html` is the source; the `.pptx` is a mirror, keep both in sync).
+- `scripts/verify.mjs` — the gate. `pnpm verify N` runs the acceptance criteria of steps 0..N in order. Step commits carry a tag `(step N)` / `(card X)` and the hooks refuse them until the step is green.
 
-`Services` is the worked example: `apps/cms/src/collections/Services.ts`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/services/[slug].astro`. **Copy its patterns** (public read access, slug hook, typed fetch) for new collections.
+`Services` is the worked example: `apps/cms/src/collections/Services.ts`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/services/[slug].astro`. **Copy its patterns** (public read access, slug hook, typed fetch) for `Projects`. The ladder is in `docs/TASK_BRIEF.md`: 1 Projects collection, 2 seed, 3 archive page, 4 detail page, 5 Profile global + About page, 6 two stretch cards.
 
 ## Commands
 
@@ -36,7 +37,9 @@ Starter for the Webee L&D workshop "Astro + Payload with Claude Code". pnpm mono
 pnpm dev              # both servers (cms on :3300, web on :4321)
 pnpm dev:cms          # Payload only
 pnpm dev:web          # Astro only
-pnpm generate:types   # REQUIRED after changing any collection's fields -> apps/cms/src/payload-types.ts
+pnpm verify [N]       # the gate: steps 0..N against the RUNNING servers; stops at the first red
+pnpm verify --status  # last result per step, no checks run
+pnpm generate:types   # REQUIRED after changing any collection's or global's fields -> apps/cms/src/payload-types.ts
 pnpm seed             # idempotent seed (admin user + demo content) — apps/cms/src/seed.ts
 pnpm reset            # delete SQLite DB + uploads, re-seed
 pnpm typecheck        # tsc (cms) + astro check (web)
@@ -48,17 +51,19 @@ Admin login: `admin@webee.local` / `workshop123` (workshop only).
 ## Conventions
 
 - Collections: one file per collection in `apps/cms/src/collections/`, PascalCase filename, kebab-case plural `slug`. Register in `payload.config.ts`. Set **all four** access rules explicitly. Give every public collection `read: () => true`.
+- Globals: one file per global in `apps/cms/src/globals/`, PascalCase filename, singular `slug` (`profile`). Register under `globals` in `payload.config.ts`. `read: () => true`, `update` needs a user. Fetch in Astro with `getGlobal('profile')` from `@/lib/payload`.
 - Every content collection has `title` + `slug` (auto-generated via the `beforeValidate` hook pattern in `Services.ts`).
 - After changing fields: `pnpm generate:types`. The Astro app imports those types via `@cms/payload-types` — a type error in `apps/web` after a field change is expected and is the fix list.
-- Astro pages fetch in frontmatter using `getDocs` / `getDocBySlug` from `@/lib/payload`. Use `depth: 1` (the default) to populate relationships and uploads. Return a 404 `Response` when a slug does not resolve.
+- Astro pages fetch in frontmatter using `getDocs` / `getDocBySlug` / `getGlobal` from `@/lib/payload`. Use `depth: 1` (the default) to populate relationships and uploads. Return a 404 `Response` when a slug does not resolve.
 - Uploads: use the existing `media` collection with an `upload` field. Build image URLs with `mediaUrl()`.
 - Rich text is Lexical JSON. Render it in Astro with `convertLexicalToHTML` from `@payloadcms/richtext-lexical/html` (install that package in `apps/web` first).
 - SQLite runs with `push: true` in dev, so schema changes apply on restart. Do not create migrations in this workshop.
-- Commit after every working step. Small commits with a message that says what changed and why.
+- Commit only when the step's gate is green, with the message from the brief. Step commits end with `(step N)`; stretch cards with `(card A)`..`(card G)`. The commit hooks enforce this. If the gate is red, fix the ✘ it names; never drop the tag, never add `--no-verify`.
+- `scripts/verify.mjs`, `.claude/hooks/*` and `.claude/githooks/*` are the gate. Never edit them to make a step pass. If a proposed fix touches them, it is the wrong fix.
 
 ## WordPress → Payload/Astro vocabulary
 
-CPT → collection · ACF field group → `fields` · Repeater → `array` · Post Object → `relationship` · Image → `upload` · WYSIWYG → `richText` · Flexible Content → `blocks` · `save_post` → `beforeChange`/`afterChange` hooks · `WP_Query` → `?where[..]&sort=&limit=` · `archive-*.php` → `pages/<slug>/index.astro` · `single-*.php` → `pages/<slug>/[slug].astro` · `template-parts/` → `components/` · `header.php`/`footer.php` → `layouts/Base.astro`. Full table in `wordpress-reference/README.md`.
+CPT → collection · ACF options page → global · ACF field group → `fields` · Repeater → `array` · Post Object → `relationship` · Image → `upload` · WYSIWYG → `richText` · Flexible Content → `blocks` · `save_post` → `beforeChange`/`afterChange` hooks · `WP_Query` → `?where[..]&sort=&limit=` · `get_field('x','option')` → `getGlobal('profile')` · `archive-*.php` → `pages/<slug>/index.astro` · `single-*.php` → `pages/<slug>/[slug].astro` · `page-about.php` → `pages/about.astro` · `template-parts/` → `components/` · `header.php`/`footer.php` → `layouts/Base.astro`. Full table in `wordpress-reference/README.md`.
 
 <!-- claude-kit:begin:standards -->
 ## Project rules — `.claude/rules/`
