@@ -310,6 +310,10 @@ export interface Project {
      */
     description?: string | null;
   };
+  /**
+   * Only one project can be featured. Saving this unsets the others.
+   */
+  featured?: boolean | null;
   services?: (number | Service)[] | null;
   stack?:
     | {
@@ -539,6 +543,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         title?: T;
         description?: T;
       };
+  featured?: T;
   services?: T;
   stack?:
     | T

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { ValidationError } from 'payload'
 
 import { ImageText } from '../blocks/ImageText'
 import { Quote } from '../blocks/Quote'
@@ -23,6 +24,38 @@ export const Projects: CollectionConfig = {
     create: ({ req: { user } }) => Boolean(user),
     update: ({ req: { user } }) => Boolean(user),
     delete: ({ req: { user } }) => Boolean(user),
+  },
+  hooks: {
+    // Card F — WordPress analogy: a `save_post` / `wp_insert_post_data` handler. Unlike WP, a thrown
+    // ValidationError here reaches the admin form as a field error and rolls the transaction back.
+    beforeChange: [
+      ({ data }) => {
+        if (data.completedOn && new Date(data.completedOn) > new Date()) {
+          throw new ValidationError({
+            errors: [{ path: 'completedOn', message: 'Completion date cannot be in the future.' }],
+          })
+        }
+        return data
+      },
+    ],
+    afterChange: [
+      async ({ doc, req }) => {
+        req.payload.logger.info(`[projects] ${doc.slug} saved by ${req.user?.email ?? 'seed'}`)
+
+        // Only one featured project at a time. The update below fires afterChange again, so
+        // `req.context` carries a flag that stops the second run from recursing.
+        if (doc.featured && !req.context.unfeaturing) {
+          await req.payload.update({
+            collection: 'projects',
+            where: { and: [{ featured: { equals: true } }, { id: { not_equals: doc.id } }] },
+            data: { featured: false },
+            req, // same transaction as the save that triggered this
+            context: { unfeaturing: true },
+          })
+        }
+        return doc
+      },
+    ],
   },
   fields: [
     { name: 'title', type: 'text', required: true },
@@ -99,6 +132,13 @@ export const Projects: CollectionConfig = {
         { name: 'title', type: 'text', maxLength: 60, admin: { description: 'Falls back to the title.' } },
         { name: 'description', type: 'textarea', maxLength: 160, admin: { description: 'Falls back to the summary.' } },
       ],
+    },
+    // Card F
+    {
+      name: 'featured',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { position: 'sidebar', description: 'Only one project can be featured. Saving this unsets the others.' },
     },
     // Card A — WordPress analogy: ACF Post Object / Relationship field.
     {

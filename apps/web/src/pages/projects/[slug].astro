@@ -41,6 +41,7 @@ const metaDescription = project.seo?.description || project.summary
     <span class="pill">{project.client}</span>
     <span>{project.role}</span>
     <span>{completed}</span>
+    {project.featured && <span class="pill ghost">Featured</span>}
     {
       project.projectUrl && (
         <a href={project.projectUrl} target="_blank" rel="noopener">
