@@ -82,7 +82,10 @@ const steps = {
     checks: [
       ['pnpm doctor is all green', () => {
         const r = run('node', ['scripts/doctor.mjs'])
-        if (r.status !== 0) fail('pnpm doctor reports a ✘', 'run pnpm doctor and fix every ✘ line')
+        if (r.status !== 0) {
+          const red = (r.stdout + r.stderr).split('\n').filter((l) => l.includes('✘') || l.includes('fix:')).join('\n      ')
+          fail('pnpm doctor reports a ✘', red || 'run pnpm doctor and fix every ✘ line')
+        }
       }],
       ['CMS is running on :3300', async () => {
         const r = await http(`${CMS}/api/services?limit=1`)

@@ -7,7 +7,7 @@ MSG=$(cat "$1")
 TAG=$(printf '%s' "$MSG" | grep -oE '\((step [0-6]|card [A-G])\)' | head -1)
 [ -z "$TAG" ] && exit 0
 ROOT=$(git rev-parse --show-toplevel)
-if ! (cd "$ROOT" && node scripts/verify.mjs --gate "$TAG"); then
+if ! (cd "$ROOT" && node --no-deprecation scripts/verify.mjs --gate "$TAG"); then
   echo "" >&2
   echo "commit-msg: commit tagged $TAG refused, that step is not green yet. Fix the ✘ lines above and commit again." >&2
   exit 1

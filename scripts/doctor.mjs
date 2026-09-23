@@ -42,9 +42,15 @@ existsSync(resolve(root, 'node_modules')) ? ok('dependencies installed') : bad('
 existsSync(resolve(root, 'apps/cms/.env')) ? ok('apps/cms/.env exists') : bad('apps/cms/.env missing', 'pnpm setup')
 existsSync(resolve(root, 'apps/web/.env')) ? ok('apps/web/.env exists') : bad('apps/web/.env missing', 'pnpm setup')
 existsSync(resolve(root, 'apps/cms/payload.db')) ? ok('database seeded') : bad('payload.db missing', 'pnpm setup (or pnpm seed)')
+// Ports: free is fine (you have not started yet); in use by OUR servers is fine (pnpm dev is running);
+// in use by anything else is the EADDRINUSE you would hit on pnpm dev.
+const probes = { 3300: 'http://localhost:3300/api/services?limit=1', 4321: 'http://localhost:4321/' }
 for (const port of [3300, 4321]) {
   const who = sh(`lsof -nP -iTCP:${port} -sTCP:LISTEN | tail -n +2 | awk '{print $1}' | head -1`)
-  who ? bad(`port ${port} is in use by ${who}`, `stop it, or you will see EADDRINUSE from pnpm dev`) : ok(`port ${port} free`)
+  if (!who) { ok(`port ${port} free`); continue }
+  let ours = false
+  try { ours = (await fetch(probes[port])).status === 200 } catch {}
+  ours ? ok(`port ${port}: pnpm dev is running`) : bad(`port ${port} is in use by ${who}`, `stop it, or you will see EADDRINUSE from pnpm dev`)
 }
 existsSync(resolve(root, '.claude/settings.json')) ? ok('.claude/ present (claude-kit)') : bad('.claude/ missing', 'git checkout the repo again; .claude is committed')
 

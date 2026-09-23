@@ -17,7 +17,7 @@
     "generate:types": "pnpm --filter cms generate:types",
     "typecheck": "pnpm --filter cms typecheck && pnpm --filter web typecheck",
     "doctor": "node scripts/doctor.mjs",
-    "verify": "node scripts/verify.mjs"
+    "verify": "node --no-deprecation scripts/verify.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.1.2"

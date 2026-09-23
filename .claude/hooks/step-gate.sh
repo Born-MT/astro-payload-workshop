@@ -21,7 +21,7 @@ TAG=$(printf '%s' "$COMMAND" | grep -oE '\((step [0-6]|card [A-G])\)' | head -1)
 [ -z "$TAG" ] && exit 0
 
 ROOT="${CLAUDE_PROJECT_DIR:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}"
-OUT=$(cd "$ROOT" && node scripts/verify.mjs --gate "$TAG" 2>&1)
+OUT=$(cd "$ROOT" && node --no-deprecation scripts/verify.mjs --gate "$TAG" 2>&1)
 STATUS=$?
 if [ $STATUS -ne 0 ]; then
   # Strip ANSI colour, keep the last useful lines for the reason.
