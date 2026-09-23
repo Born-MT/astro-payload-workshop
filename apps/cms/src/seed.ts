@@ -62,6 +62,54 @@ async function connect(attempts = 4) {
   }
 }
 
+// wp_posts + wp_postmeta rows from sample-content.sql, as Payload documents.
+// ACF repeaters (stack_0_name, highlights_0_value...) become arrays of objects.
+const projects = [
+  {
+    title: 'Maltese Artisan Marketplace',
+    slug: 'maltese-artisan-marketplace',
+    client: 'Malta Crafts Council',
+    role: 'Lead developer',
+    summary: 'A headless storefront for 60 local makers, replacing a WooCommerce site that took 9s to load.',
+    projectUrl: 'https://example.com/artisans',
+    repoUrl: 'https://github.com/example/artisans',
+    completedOn: '2026-03-14',
+    stack: [{ name: 'Astro' }, { name: 'Payload' }, { name: 'Stripe' }],
+    highlights: [
+      { value: '0.9s', label: 'Largest Contentful Paint' },
+      { value: '+38%', label: 'Conversion rate' },
+      { value: '60', label: 'Makers onboarded' },
+    ],
+  },
+  {
+    title: 'Harbour Ferries Booking',
+    slug: 'harbour-ferries-booking',
+    client: 'Grand Harbour Ferries',
+    role: 'Backend developer',
+    summary: 'Real-time timetable and ticketing for a ferry operator, rebuilt from a brittle WordPress plugin.',
+    projectUrl: 'https://example.com/ferries',
+    completedOn: '2026-06-02',
+    stack: [{ name: 'Payload' }, { name: 'PostgreSQL' }],
+    highlights: [
+      { value: '12k', label: 'Tickets sold in month one' },
+      { value: '-70%', label: 'Support emails' },
+    ],
+  },
+  {
+    title: 'Valletta Arts Festival',
+    slug: 'valletta-arts-festival',
+    client: 'Valletta Cultural Agency',
+    role: 'Front-end developer',
+    summary: 'Programme, venues and ticket links for a 3-week festival, edited by a non-technical team.',
+    completedOn: '2026-08-20',
+    stack: [{ name: 'Astro' }, { name: 'Payload' }],
+    highlights: [
+      { value: '140', label: 'Events published' },
+      { value: '4 days', label: 'From brief to launch' },
+    ],
+  },
+]
+
 async function seed() {
   const payload = await connect()
 
@@ -90,9 +138,20 @@ async function seed() {
     }
   }
 
-  // TODO (step 2): seed 3 projects here, same find-by-slug-then-create pattern as services.
-  //   Source: wordpress-reference/portfolio-plugin/sample-content.sql — then replace them with
-  //   three things you actually built.
+  // 3. Projects (step 2). Ported from wordpress-reference/portfolio-plugin/sample-content.sql.
+  //    Replace these three with things you actually built.
+  for (const project of projects) {
+    const found = await payload.find({
+      collection: 'projects',
+      where: { slug: { equals: project.slug } },
+      limit: 1,
+    })
+    if (found.totalDocs === 0) {
+      await payload.create({ collection: 'projects', data: project })
+      payload.logger.info(`Created project "${project.title}"`)
+    }
+  }
+
   // TODO (step 5): seed the profile global with payload.updateGlobal({ slug: 'profile', data: {...} }).
 
   payload.logger.info('Seed complete')
