@@ -1,0 +1,64 @@
+---
+/** Ported from wordpress-reference/theme/single-project.php */
+import Base from '@/layouts/Base.astro'
+import { getDocBySlug } from '@/lib/payload'
+
+const { slug } = Astro.params
+const project = slug ? await getDocBySlug('projects', slug) : null
+
+if (!project) {
+  return new Response(null, { status: 404, statusText: 'Not found' })
+}
+
+const completed = new Date(project.completedOn).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+---
+
+<Base title={project.title} description={project.summary}>
+  <a class="back" href="/projects">← All projects</a>
+
+  <h1>{project.title}</h1>
+  <div class="meta">
+    <span class="pill">{project.client}</span>
+    <span>{project.role}</span>
+    <span>{completed}</span>
+    {
+      project.projectUrl && (
+        <a href={project.projectUrl} target="_blank" rel="noopener">
+          Visit site ↗
+        </a>
+      )
+    }
+    {
+      project.repoUrl && (
+        <a href={project.repoUrl} target="_blank" rel="noopener">
+          Code ↗
+        </a>
+      )
+    }
+  </div>
+
+  <p class="lede">{project.summary}</p>
+
+  {
+    project.stack?.length ? (
+      <div class="meta">
+        {project.stack.map((item) => (
+          <span class="pill ghost">{item.name}</span>
+        ))}
+      </div>
+    ) : null
+  }
+
+  {
+    project.highlights?.length ? (
+      <div class="stats">
+        {project.highlights.map((h) => (
+          <div class="stat">
+            <strong>{h.value}</strong>
+            <span>{h.label}</span>
+          </div>
+        ))}
+      </div>
+    ) : null
+  }
+</Base>
