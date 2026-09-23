@@ -34,12 +34,19 @@ const sh = (cmd, opts = {}) => {
 }
 const run = (cmd, argv) => spawnSync(cmd, argv, { cwd: root, stdio: 'pipe', encoding: 'utf8', shell: true })
 
-async function http(url, init) {
+// Dev servers drop keep-alive connections while they recompile, which surfaces in Node as a
+// thrown fetch ("status 0") even though the next request succeeds. Retry a few times before
+// reporting, so a transient blip never reads as a failed step.
+async function http(url, init, attempt = 0) {
   try {
     const res = await fetch(url, { redirect: 'manual', ...init })
     const text = await res.text()
     return { status: res.status, text, json: safeJson(text) }
   } catch {
+    if (attempt < 4) {
+      await new Promise((r) => setTimeout(r, 500 * (attempt + 1)))
+      return http(url, init, attempt + 1)
+    }
     return { status: 0, text: '', json: null }
   }
 }
