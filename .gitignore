@@ -9,3 +9,4 @@ dist/
 apps/cms/media/
 apps/cms/payload.db
 apps/cms/payload.db-*
+.workshop/

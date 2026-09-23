@@ -23,7 +23,7 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="description" content={description} />
-    <title>{title} · Webee Workshop</title>
+    <title>{title} · My Portfolio</title>
     <slot name="head" />
   </head>
   <body>
@@ -32,7 +32,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         <a class="brand" href="/">Webee<span>.</span></a>
         <nav>
           <a href="/" aria-current={isActive('/') ? 'page' : undefined}>Services</a>
-          <a href="/case-studies" aria-current={isActive('/case-studies') ? 'page' : undefined}>Case Studies</a>
+          <a href="/projects" aria-current={isActive('/projects') ? 'page' : undefined}>Projects</a>
+          <a href="/about" aria-current={isActive('/about') ? 'page' : undefined}>About</a>
           <a href={adminUrl} target="_blank" rel="noopener">Admin ↗</a>
         </nav>
       </div>
@@ -40,6 +41,6 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
     <main>
       <slot />
     </main>
-    <footer>Astro frontend · Payload CMS · Built in the Webee L&amp;D workshop</footer>
+    <footer>Astro frontend · Payload CMS · Started in the Webee L&amp;D workshop</footer>
   </body>
 </html>

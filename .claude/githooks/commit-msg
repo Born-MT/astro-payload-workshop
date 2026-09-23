@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Workshop step gate for commits made outside Claude Code (your terminal, your editor).
+# Same rule as .claude/hooks/step-gate.sh: a commit tagged "(step N)" or "(card X)" is only
+# allowed once that step verifies green. Untagged commits are not gated.
+set -u
+MSG=$(cat "$1")
+TAG=$(printf '%s' "$MSG" | grep -oE '\((step [0-6]|card [A-G])\)' | head -1)
+[ -z "$TAG" ] && exit 0
+ROOT=$(git rev-parse --show-toplevel)
+if ! (cd "$ROOT" && node scripts/verify.mjs --gate "$TAG"); then
+  echo "" >&2
+  echo "commit-msg: commit tagged $TAG refused, that step is not green yet. Fix the ✘ lines above and commit again." >&2
+  exit 1
+fi
+exit 0

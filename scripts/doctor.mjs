@@ -32,6 +32,12 @@ git ? ok(git) : bad('git not found', 'install Xcode command line tools / git')
 const claude = sh('claude --version')
 claude ? ok(`Claude Code ${claude}`) : bad('Claude Code CLI not found', 'npm i -g @anthropic-ai/claude-code, then run `claude` and log in')
 
+const jq = sh('jq --version')
+jq ? ok(`${jq}`) : bad('jq not found', 'brew install jq (mac) or sudo apt install jq. Without it every Claude Code command is blocked.')
+
+const hooksPath = sh('git config --get core.hooksPath')
+hooksPath === '.claude/githooks' ? ok('git hooks wired (.claude/githooks)') : bad('git hooks not wired', 'pnpm setup (or: git config core.hooksPath .claude/githooks)')
+
 existsSync(resolve(root, 'node_modules')) ? ok('dependencies installed') : bad('node_modules missing', 'pnpm install')
 existsSync(resolve(root, 'apps/cms/.env')) ? ok('apps/cms/.env exists') : bad('apps/cms/.env missing', 'pnpm setup')
 existsSync(resolve(root, 'apps/web/.env')) ? ok('apps/web/.env exists') : bad('apps/web/.env missing', 'pnpm setup')
@@ -42,5 +48,5 @@ for (const port of [3300, 4321]) {
 }
 existsSync(resolve(root, '.claude/settings.json')) ? ok('.claude/ present (claude-kit)') : bad('.claude/ missing', 'git checkout the repo again; .claude is committed')
 
-console.log(failed ? '\nFix the ✘ lines above, then re-run pnpm doctor.' : '\nYou are ready for the workshop 🎉')
+console.log(failed ? '\nFix the ✘ lines above, then re-run pnpm doctor.' : '\nEnvironment is ready. Start pnpm dev, then run pnpm verify 0.')
 process.exit(failed ? 1 : 0)

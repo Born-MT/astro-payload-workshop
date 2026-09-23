@@ -10,12 +10,15 @@
  *   GET /api/<slug>?sort=order            sort (prefix with - for desc)
  *   GET /api/<slug>?depth=1               populate relationships / uploads
  *   GET /api/<slug>/<id>                  single doc by id
+ *   GET /api/globals/<slug>               a global (one document, like an ACF options page)
  * Docs: https://payloadcms.com/docs/rest-api/overview
  */
 import type { Config } from '@cms/payload-types'
 
 type CollectionSlug = keyof Config['collections']
 type Doc<S extends CollectionSlug> = Config['collections'][S]
+type GlobalSlug = keyof Config['globals']
+type GlobalDoc<S extends GlobalSlug> = Config['globals'][S]
 
 export interface PaginatedDocs<T> {
   docs: T[]
@@ -86,6 +89,14 @@ export async function getDocBySlug<S extends CollectionSlug>(
     limit: 1,
   })
   return result.docs[0] ?? null
+}
+
+/**
+ * Fetch a global. WordPress analogy: get_field('name', 'option') on an ACF options page.
+ * Until a global is registered in payload.config.ts, `GlobalSlug` is `never` and this will not typecheck.
+ */
+export function getGlobal<S extends GlobalSlug>(slug: S, query: Pick<Query, 'depth'> = {}): Promise<GlobalDoc<S>> {
+  return request<GlobalDoc<S>>(`/globals/${slug}${toQueryString({ depth: 1, ...query })}`)
 }
 
 /** Build a full URL for an uploaded file (Payload returns relative `url`s). */

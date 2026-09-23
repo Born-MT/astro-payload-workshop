@@ -1,8 +1,8 @@
 [
   {
-    "key": "group_case_study",
-    "title": "Case Study details",
-    "location": [[{ "param": "post_type", "operator": "==", "value": "case_study" }]],
+    "key": "group_project",
+    "title": "Project details",
+    "location": [[{ "param": "post_type", "operator": "==", "value": "project" }]],
     "fields": [
       {
         "key": "field_client",
@@ -10,7 +10,16 @@
         "name": "client",
         "type": "text",
         "required": 1,
-        "instructions": "Client or brand name shown on the card."
+        "instructions": "Who it was for. Use \"Personal\" for a side project."
+      },
+      {
+        "key": "field_role",
+        "label": "Your role",
+        "name": "role",
+        "type": "text",
+        "required": 1,
+        "placeholder": "Lead developer",
+        "instructions": "What you did on it, in three words."
       },
       {
         "key": "field_summary",
@@ -24,8 +33,15 @@
       },
       {
         "key": "field_project_url",
-        "label": "Live site URL",
+        "label": "Live URL",
         "name": "project_url",
+        "type": "url",
+        "required": 0
+      },
+      {
+        "key": "field_repo_url",
+        "label": "Repository URL",
+        "name": "repo_url",
         "type": "url",
         "required": 0
       },
@@ -38,28 +54,41 @@
         "return_format": "Y-m-d"
       },
       {
-        "key": "field_results",
-        "label": "Results",
-        "name": "results",
+        "key": "field_stack",
+        "label": "Tech stack",
+        "name": "stack",
+        "type": "repeater",
+        "min": 1,
+        "max": 8,
+        "layout": "table",
+        "button_label": "Add technology",
+        "sub_fields": [
+          { "key": "field_stack_name", "label": "Name", "name": "name", "type": "text", "required": 1, "placeholder": "Astro" }
+        ]
+      },
+      {
+        "key": "field_highlights",
+        "label": "Highlights",
+        "name": "highlights",
         "type": "repeater",
         "min": 1,
         "max": 4,
         "layout": "table",
-        "button_label": "Add result",
+        "button_label": "Add highlight",
         "sub_fields": [
-          { "key": "field_result_value", "label": "Value", "name": "value", "type": "text", "required": 1, "placeholder": "+38%" },
-          { "key": "field_result_label", "label": "Label", "name": "label", "type": "text", "required": 1, "placeholder": "Conversion rate" }
+          { "key": "field_highlight_value", "label": "Value", "name": "value", "type": "text", "required": 1, "placeholder": "0.9s" },
+          { "key": "field_highlight_label", "label": "Label", "name": "label", "type": "text", "required": 1, "placeholder": "Largest Contentful Paint" }
         ]
       },
       {
         "key": "field_services",
-        "label": "Services delivered",
+        "label": "Services used",
         "name": "services",
         "type": "relationship",
         "post_type": ["service"],
         "multiple": 1,
         "return_format": "object",
-        "instructions": "STRETCH CARD: relationship to the Services post type."
+        "instructions": "STRETCH CARD A: relationship to the Services post type."
       },
       {
         "key": "field_hero",
@@ -68,21 +97,21 @@
         "type": "image",
         "return_format": "array",
         "preview_size": "medium",
-        "instructions": "STRETCH CARD: image upload."
+        "instructions": "STRETCH CARD B: image upload."
       },
       {
         "key": "field_body",
         "label": "Story",
         "name": "body",
         "type": "wysiwyg",
-        "instructions": "STRETCH CARD: rich text. Challenge / approach / outcome."
+        "instructions": "STRETCH CARD C: rich text. Problem / what you built / what you learned."
       },
       {
         "key": "field_seo",
         "label": "SEO",
         "name": "seo",
         "type": "group",
-        "instructions": "STRETCH CARD: meta title + description.",
+        "instructions": "STRETCH CARD D: meta title + description.",
         "sub_fields": [
           { "key": "field_seo_title", "label": "Meta title", "name": "title", "type": "text", "maxlength": 60 },
           { "key": "field_seo_desc", "label": "Meta description", "name": "description", "type": "textarea", "maxlength": 160, "rows": 2 }

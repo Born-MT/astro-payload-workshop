@@ -1,5 +1,6 @@
 /**
  * Seed script: creates the admin user and the worked-example Services.
+ * Steps 2 and 5 of the workshop add your projects and your profile below.
  * Run with `pnpm seed` (from apps/cms) or `pnpm seed` from the repo root.
  * Safe to re-run: it skips anything that already exists.
  *
@@ -71,7 +72,10 @@ async function seed() {
     }
   }
 
-  // TODO (workshop core task, step 2): seed 3 case studies here.
+  // TODO (step 2): seed 3 projects here, same find-by-slug-then-create pattern as services.
+  //   Source: wordpress-reference/portfolio-plugin/sample-content.sql — then replace them with
+  //   three things you actually built.
+  // TODO (step 5): seed the profile global with payload.updateGlobal({ slug: 'profile', data: {...} }).
 
   payload.logger.info('Seed complete')
 }

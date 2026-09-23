@@ -1,17 +1,17 @@
 <?php
 /**
- * Archive template: /case-studies/
- * Port to: apps/web/src/pages/case-studies/index.astro
+ * Archive template: /projects/
+ * Port to: apps/web/src/pages/projects/index.astro   (STEP 3)
  */
 get_header(); ?>
 
 <main class="container">
-  <h1>Case Studies</h1>
-  <p class="lede">Selected work, most recent first.</p>
+  <h1>Projects</h1>
+  <p class="lede">Things I have built, most recent first.</p>
 
   <?php
   $query = new WP_Query( [
-      'post_type'      => 'case_study',
+      'post_type'      => 'project',
       'posts_per_page' => 20,
       'meta_key'       => 'completed_on',
       'orderby'        => 'meta_value',
@@ -21,11 +21,11 @@ get_header(); ?>
   if ( $query->have_posts() ) : ?>
     <div class="grid">
       <?php while ( $query->have_posts() ) : $query->the_post();
-          get_template_part( 'template-parts/content', 'case_study' );
+          get_template_part( 'template-parts/content', 'project' );
       endwhile; ?>
     </div>
   <?php else : ?>
-    <p class="empty">No case studies yet.</p>
+    <p class="empty">No projects yet.</p>
   <?php endif;
   wp_reset_postdata(); ?>
 </main>

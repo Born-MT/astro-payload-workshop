@@ -24,9 +24,12 @@ for (const [name, dir] of Object.entries(apps)) {
   console.log(`✔ created apps/${name}/.env`)
 }
 
+console.log('→ wiring git hooks (secret scan + workshop step gate)')
+execSync('git config core.hooksPath .claude/githooks', { stdio: 'inherit', cwd: root })
 console.log('→ generating Payload types')
 execSync('pnpm --filter cms generate:types', { stdio: 'inherit', cwd: root })
 console.log('→ seeding database')
 execSync('pnpm --filter cms seed', { stdio: 'inherit', cwd: root })
 console.log('\nAll set. Run `pnpm dev`, then open http://localhost:4321 and http://localhost:3300/admin')
+console.log('Then, with both servers running: `pnpm verify 0`')
 console.log('Admin login: admin@webee.local / workshop123')

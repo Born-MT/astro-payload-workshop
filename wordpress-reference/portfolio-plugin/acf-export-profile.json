@@ -1,0 +1,44 @@
+[
+  {
+    "key": "group_profile",
+    "title": "Profile",
+    "location": [[{ "param": "options_page", "operator": "==", "value": "profile" }]],
+    "fields": [
+      { "key": "field_profile_name", "label": "Name", "name": "name", "type": "text", "required": 1 },
+      {
+        "key": "field_profile_headline",
+        "label": "Headline",
+        "name": "headline",
+        "type": "text",
+        "required": 1,
+        "maxlength": 80,
+        "placeholder": "Full-stack developer who ships fast, accessible websites"
+      },
+      {
+        "key": "field_profile_bio",
+        "label": "Bio",
+        "name": "bio",
+        "type": "textarea",
+        "required": 1,
+        "rows": 5,
+        "instructions": "Three or four sentences. Who you are, what you build, what you want to build next."
+      },
+      { "key": "field_profile_email", "label": "Email", "name": "email", "type": "email", "required": 0 },
+      { "key": "field_profile_location", "label": "Location", "name": "location", "type": "text", "required": 0 },
+      {
+        "key": "field_profile_links",
+        "label": "Links",
+        "name": "links",
+        "type": "repeater",
+        "min": 0,
+        "max": 6,
+        "layout": "table",
+        "button_label": "Add link",
+        "sub_fields": [
+          { "key": "field_link_label", "label": "Label", "name": "label", "type": "text", "required": 1, "placeholder": "GitHub" },
+          { "key": "field_link_url", "label": "URL", "name": "url", "type": "url", "required": 1 }
+        ]
+      }
+    ]
+  }
+]
