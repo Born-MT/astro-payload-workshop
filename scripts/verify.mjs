@@ -124,10 +124,11 @@ const steps = {
         const types = readFileSync(resolve(root, 'apps/cms/src/payload-types.ts'), 'utf8')
         const m = types.match(/export interface Project \{([\s\S]*?)\n\}/)
         if (!m) fail('no `export interface Project` in payload-types.ts', 'pnpm generate:types')
-        const missing = ['title', 'slug', 'client', 'role', 'summary', 'projectUrl', 'repoUrl', 'completedOn', 'stack', 'highlights'].filter((f) => !new RegExp(`^\\s+${f}\\??:`, 'm').test(m[1]))
+        // Top-level fields sit at exactly two spaces of indent; nested ones (a group's `title`) sit deeper.
+        const missing = ['title', 'slug', 'client', 'role', 'summary', 'projectUrl', 'repoUrl', 'completedOn', 'stack', 'highlights'].filter((f) => !new RegExp(`^  ${f}\\??:`, 'm').test(m[1]))
         if (missing.length) fail(`Project type is missing: ${missing.join(', ')}`, 'add the field(s) from acf-export-project.json, then pnpm generate:types')
         for (const f of ['title', 'slug', 'client', 'role', 'summary', 'completedOn']) {
-          if (new RegExp(`^\\s+${f}\\?:`, 'm').test(m[1])) fail(`${f} is optional in the Project type`, `set required: true on ${f}`)
+          if (new RegExp(`^  ${f}\\?:`, 'm').test(m[1])) fail(`${f} is optional in the Project type`, `set required: true on ${f}`)
         }
       }],
       ['slug is generated from the title (hook on the field)', () => {
