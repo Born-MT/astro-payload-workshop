@@ -128,7 +128,7 @@ This is the step that makes it yours. An ACF options page is one screen of field
 - [ ] `pnpm typecheck` passes.
 - [ ] Commit: `feat: profile global and about page (step 5)`
 
-**Hint:** `/payload-new-global profile` is installed.
+**Hints:** `/payload-new-global profile` is installed. The running CMS does not notice a new global or a new field: restart `pnpm dev:cms` after editing `payload.config.ts` or any fields, then `pnpm seed`. If the seed fails with `SQLITE_ERROR: index … already exists`, wait a few seconds and run it again.
 
 ---
 
@@ -141,6 +141,8 @@ Pick **two** from [STRETCH_CARDS.md](STRETCH_CARDS.md). Each is a ticket. Commit
 - [ ] At least two commits tagged `(card X)`.
 - [ ] Each tagged card is visible in the API (a populated relationship, an uploaded hero image, rich text in `body`, an `seo` title, a block in `layout`). Cards F and G are checked by the facilitator.
 - [ ] `pnpm typecheck` passes.
+
+**Hint:** a `(card X)` commit is gated on its own footprint: the field must exist *and* at least one project must have it filled. Restart `pnpm dev:cms` after adding the field, then seed it or fill it in the admin panel.
 
 ---
 

@@ -82,6 +82,21 @@ async function projects(query = '?limit=100&sort=-completedOn') {
   return r.json
 }
 
+// Stretch-card probes: what the API must show once a card is done. F and G have no API footprint.
+const CARD_PROBES = {
+  A: [(docs) => docs.some((d) => Array.isArray(d.services) && d.services.some((s) => typeof s === 'object')), 'no project has a populated services relationship (depth=1)'],
+  B: [(docs) => docs.some((d) => d.heroImage && typeof d.heroImage === 'object' && d.heroImage.url), 'no project has a heroImage upload'],
+  C: [(docs) => docs.some((d) => d.body && typeof d.body === 'object'), 'no project has rich text in body'],
+  D: [(docs) => docs.some((d) => d.seo && (d.seo.title || d.seo.description)), 'no project has seo.title or seo.description filled'],
+  E: [(docs) => docs.some((d) => Array.isArray(d.layout) && d.layout.length > 0), 'no project has any blocks in layout'],
+}
+async function probeCard(letter) {
+  const probe = CARD_PROBES[letter]
+  if (!probe) return
+  const { docs } = await projects('?limit=100&depth=1')
+  if (!probe[0](docs)) fail(`card ${letter}: ${probe[1]}`, 'seed it or fill it in the admin panel, then restart pnpm dev:cms if the field is new')
+}
+
 // ── the steps ─────────────────────────────────────────────────────────────
 const steps = {
   0: {
@@ -251,15 +266,7 @@ const steps = {
       }],
       ['each tagged card is visible in the API', async () => {
         const tags = [...new Set([...gitLog().matchAll(/\(card ([A-G])\)/g)].map((m) => m[1]))]
-        const { docs } = await projects('?limit=100&depth=1')
-        const probes = {
-          A: [() => docs.some((d) => Array.isArray(d.services) && d.services.some((s) => typeof s === 'object')), 'no project has a populated services relationship (depth=1)'],
-          B: [() => docs.some((d) => d.heroImage && typeof d.heroImage === 'object' && d.heroImage.url), 'no project has a heroImage upload'],
-          C: [() => docs.some((d) => d.body && typeof d.body === 'object'), 'no project has rich text in body'],
-          D: [() => docs.some((d) => d.seo && (d.seo.title || d.seo.description)), 'no project has seo.title or seo.description filled'],
-          E: [() => docs.some((d) => Array.isArray(d.layout) && d.layout.length > 0), 'no project has any blocks in layout'],
-        }
-        for (const t of tags) if (probes[t] && !probes[t][0]()) fail(`card ${t}: ${probes[t][1]}`)
+        for (const t of tags) await probeCard(t)
       }],
       ['pnpm typecheck passes', () => { const e = typecheck(); if (e) fail('typecheck failed', e) }],
     ],
@@ -325,7 +332,20 @@ async function main() {
       console.log(`\n${c.r}Commit refused: step ${target} is not green yet. Fix the ✘ above, then commit again.${c.x}`)
       process.exit(1)
     }
-    console.log(`\n${c.g}Step ${target} is green. Commit allowed.${c.x}`)
+    if (card) {
+      // A card commit must also show its own footprint in the API and typecheck, like step 6 will.
+      console.log(`\n${c.b}Card ${card[1]}${c.x}`)
+      try {
+        await probeCard(card[1])
+        const e = typecheck(); if (e) fail('typecheck failed', e)
+        console.log(`  ${c.g}✔${c.x} card ${card[1]} is visible in the API and typechecks`)
+      } catch (err) {
+        if (!(err instanceof Failed)) throw err
+        console.log(`  ${c.r}✘${c.x} ${err.message}\n\n${c.r}Commit refused: card ${card[1]} is not done yet.${c.x}`)
+        process.exit(1)
+      }
+    }
+    console.log(`\n${c.g}${card ? `Card ${card[1]}` : `Step ${target}`} is green. Commit allowed.${c.x}`)
     return
   }
 
