@@ -110,6 +110,13 @@ const projects = [
   },
 ]
 
+// Card A: the `services` postmeta in sample-content.sql, decoded from WP service IDs to slugs.
+const projectServices: Record<string, string[]> = {
+  'maltese-artisan-marketplace': ['e-commerce', 'web-development'],
+  'harbour-ferries-booking': ['web-development'],
+  'valletta-arts-festival': ['brand-ui-design', 'growth-seo'],
+}
+
 async function seed() {
   const payload = await connect()
 
@@ -140,15 +147,29 @@ async function seed() {
 
   // 3. Projects (step 2). Ported from wordpress-reference/portfolio-plugin/sample-content.sql.
   //    Replace these three with things you actually built.
+  // Card A: the WP `services` meta stores service IDs. Resolve them by slug, never by number.
+  const serviceIdBySlug = new Map<string, number>()
+  for (const service of services) {
+    const found = await payload.find({ collection: 'services', where: { slug: { equals: service.slug } }, limit: 1 })
+    if (found.docs[0]) serviceIdBySlug.set(service.slug, found.docs[0].id)
+  }
+
   for (const project of projects) {
+    const relatedServices = (projectServices[project.slug] ?? [])
+      .map((slug) => serviceIdBySlug.get(slug))
+      .filter((id): id is number => id !== undefined)
     const found = await payload.find({
       collection: 'projects',
       where: { slug: { equals: project.slug } },
       limit: 1,
     })
     if (found.totalDocs === 0) {
-      await payload.create({ collection: 'projects', data: project })
+      await payload.create({ collection: 'projects', data: { ...project, services: relatedServices } })
       payload.logger.info(`Created project "${project.title}"`)
+    } else if (!found.docs[0].services?.length && relatedServices.length) {
+      // Projects seeded before card A exist without services: link them once.
+      await payload.update({ collection: 'projects', id: found.docs[0].id, data: { services: relatedServices } })
+      payload.logger.info(`Linked services on "${project.title}"`)
     }
   }
 

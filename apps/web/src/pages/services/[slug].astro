@@ -5,7 +5,8 @@
  * dynamic segment, like WP's rewrite rule for /services/%postname%/.
  */
 import Base from '@/layouts/Base.astro'
-import { getDocBySlug } from '@/lib/payload'
+import ProjectCard from '@/components/ProjectCard.astro'
+import { getDocBySlug, getDocs } from '@/lib/payload'
 
 const { slug } = Astro.params
 const service = slug ? await getDocBySlug('services', slug) : null
@@ -13,6 +14,12 @@ const service = slug ? await getDocBySlug('services', slug) : null
 if (!service) {
   return new Response(null, { status: 404, statusText: 'Not found' })
 }
+
+// Card A: the reverse side of the relationship. WordPress analogy: a meta_query on the project CPT.
+const { docs: projects } = await getDocs('projects', {
+  where: { services: { contains: service.id } },
+  sort: '-completedOn',
+})
 ---
 
 <Base title={service.title} description={service.summary}>
@@ -25,4 +32,17 @@ if (!service) {
   <div class="prose">
     <p>{service.summary}</p>
   </div>
+
+  {
+    projects.length > 0 && (
+      <>
+        <h2>Projects using this service</h2>
+        <div class="grid">
+          {projects.map((project) => (
+            <ProjectCard project={project} />
+          ))}
+        </div>
+      </>
+    )
+  }
 </Base>

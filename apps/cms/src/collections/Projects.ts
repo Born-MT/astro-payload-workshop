@@ -71,6 +71,14 @@ export const Projects: CollectionConfig = {
       required: true,
       admin: { position: 'sidebar', date: { pickerAppearance: 'dayOnly' } },
     },
+    // Card A — WordPress analogy: ACF Post Object / Relationship field.
+    {
+      name: 'services',
+      type: 'relationship',
+      relationTo: 'services',
+      hasMany: true,
+      admin: { position: 'sidebar' },
+    },
     {
       name: 'stack',
       type: 'array',

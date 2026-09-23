@@ -11,6 +11,8 @@ if (!project) {
 }
 
 const completed = new Date(project.completedOn).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+// Card A: relationship items are `number | Service` depending on depth. Only render populated ones.
+const services = (project.services ?? []).filter((s) => typeof s === 'object')
 ---
 
 <Base title={project.title} description={project.summary}>
@@ -60,5 +62,20 @@ const completed = new Date(project.completedOn).toLocaleDateString('en-GB', { mo
         ))}
       </div>
     ) : null
+  }
+
+  {
+    services.length > 0 && (
+      <>
+        <h2>Services</h2>
+        <div class="meta">
+          {services.map((s) => (
+            <a class="pill ghost" href={`/services/${s.slug}`}>
+              {s.title}
+            </a>
+          ))}
+        </div>
+      </>
+    )
   }
 </Base>

@@ -245,6 +245,7 @@ export interface Project {
   projectUrl?: string | null;
   repoUrl?: string | null;
   completedOn: string;
+  services?: (number | Service)[] | null;
   stack?:
     | {
         name: string;
@@ -444,6 +445,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   projectUrl?: T;
   repoUrl?: T;
   completedOn?: T;
+  services?: T;
   stack?:
     | T
     | {
