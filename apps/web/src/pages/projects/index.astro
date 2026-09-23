@@ -1,0 +1,25 @@
+---
+/** Ported from wordpress-reference/theme/archive-project.php */
+import Base from '@/layouts/Base.astro'
+import ProjectCard from '@/components/ProjectCard.astro'
+import { getDocs } from '@/lib/payload'
+
+const { docs: projects } = await getDocs('projects', { sort: '-completedOn', limit: 20 })
+---
+
+<Base title="Projects" description="Things I have built, most recent first.">
+  <h1>Projects</h1>
+  <p class="lede">Things I have built, most recent first.</p>
+
+  {
+    projects.length === 0 ? (
+      <div class="empty">No projects yet. Run <code>pnpm seed</code>, or add one in the admin panel.</div>
+    ) : (
+      <div class="grid">
+        {projects.map((project) => (
+          <ProjectCard project={project} />
+        ))}
+      </div>
+    )
+  }
+</Base>

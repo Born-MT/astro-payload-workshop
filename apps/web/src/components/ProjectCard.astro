@@ -1,0 +1,17 @@
+---
+/** Ported from wordpress-reference/theme/template-parts/content-project.php */
+import type { Project } from '@cms/payload-types'
+
+interface Props {
+  project: Project
+}
+
+const { project } = Astro.props
+---
+
+<a class="card" href={`/projects/${project.slug}`}>
+  <span class="pill">{project.client}</span>
+  <h3>{project.title}</h3>
+  <p>{project.summary}</p>
+  <small>{project.role}</small>
+</a>
