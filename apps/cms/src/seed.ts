@@ -44,8 +44,26 @@ const services = [
   },
 ] as const
 
+/**
+ * Boot Payload for the seed. With `push: true`, both this process and a running `pnpm dev`
+ * try to sync the SQLite schema; right after a field change they can race and one of them
+ * fails with "index … already exists". That is harmless, so wait a moment and try again.
+ */
+async function connect(attempts = 4) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      return await getPayload({ config })
+    } catch (err) {
+      const text = `${(err as Error)?.message ?? ''} ${((err as { cause?: Error })?.cause?.message) ?? ''}`
+      if (!/already exists/.test(text) || attempt >= attempts) throw err
+      console.warn(`seed: schema push raced the dev server (attempt ${attempt}/${attempts}), retrying in ${attempt * 3}s`)
+      await new Promise((resolve) => setTimeout(resolve, attempt * 3000))
+    }
+  }
+}
+
 async function seed() {
-  const payload = await getPayload({ config })
+  const payload = await connect()
 
   // 1. Admin user
   const existingUsers = await payload.find({ collection: 'users', limit: 1 })
