@@ -19,9 +19,18 @@ const hero = typeof project.heroImage === 'object' ? project.heroImage : null
 const heroSrc = mediaUrl(hero?.sizes?.hero?.url ?? hero?.url)
 // Card C: Lexical JSON -> HTML at render time. WordPress analogy: the_content() applying filters.
 const bodyHtml = project.body ? convertLexicalToHTML({ data: project.body }) : ''
+// Card D: SEO overrides with fallbacks. WordPress analogy: Yoast's title template.
+const metaTitle = project.seo?.title || project.title
+const metaDescription = project.seo?.description || project.summary
 ---
 
-<Base title={project.title} description={project.summary}>
+<Base title={metaTitle} description={metaDescription}>
+  <Fragment slot="head">
+    <meta property="og:title" content={metaTitle} />
+    <meta property="og:description" content={metaDescription} />
+    {heroSrc && <meta property="og:image" content={heroSrc} />}
+  </Fragment>
+
   <a class="back" href="/projects">← All projects</a>
 
   {heroSrc && <img class="hero" src={heroSrc} alt={hero?.alt ?? ''} />}

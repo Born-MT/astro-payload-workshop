@@ -80,6 +80,16 @@ export const Projects: CollectionConfig = {
       required: true,
       admin: { position: 'sidebar', date: { pickerAppearance: 'dayOnly' } },
     },
+    // Card D — WordPress analogy: the Yoast box. A group is an ACF group: one object, named sub-fields.
+    {
+      name: 'seo',
+      type: 'group',
+      admin: { position: 'sidebar' },
+      fields: [
+        { name: 'title', type: 'text', maxLength: 60, admin: { description: 'Falls back to the title.' } },
+        { name: 'description', type: 'textarea', maxLength: 160, admin: { description: 'Falls back to the summary.' } },
+      ],
+    },
     // Card A — WordPress analogy: ACF Post Object / Relationship field.
     {
       name: 'services',

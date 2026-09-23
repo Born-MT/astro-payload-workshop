@@ -264,6 +264,16 @@ export interface Project {
   projectUrl?: string | null;
   repoUrl?: string | null;
   completedOn: string;
+  seo?: {
+    /**
+     * Falls back to the title.
+     */
+    title?: string | null;
+    /**
+     * Falls back to the summary.
+     */
+    description?: string | null;
+  };
   services?: (number | Service)[] | null;
   stack?:
     | {
@@ -466,6 +476,12 @@ export interface ProjectsSelect<T extends boolean = true> {
   projectUrl?: T;
   repoUrl?: T;
   completedOn?: T;
+  seo?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+      };
   services?: T;
   stack?:
     | T

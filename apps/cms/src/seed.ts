@@ -237,6 +237,21 @@ async function seed() {
     payload.logger.info('Wrote the story on "Maltese Artisan Marketplace"')
   }
 
+  // Card D: SEO overrides on one project; the other two exercise the fallback.
+  if (artisan.docs[0] && !artisan.docs[0].seo?.title) {
+    await payload.update({
+      collection: 'projects',
+      id: artisan.docs[0].id,
+      data: {
+        seo: {
+          title: 'Artisan Marketplace case study: 0.9s LCP on Astro + Payload',
+          description: 'How a WooCommerce site for 60 Maltese makers became a headless storefront with a sub-second first paint.',
+        },
+      },
+    })
+    payload.logger.info('Set SEO fields on "Maltese Artisan Marketplace"')
+  }
+
   // 4. Profile global (step 5). Ported from the wp_options rows in sample-content.sql.
   //    A global always exists, so this is an update, not a find-then-create. Replace with you.
   const profile = await payload.findGlobal({ slug: 'profile' })
