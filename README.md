@@ -43,7 +43,7 @@ scripts               setup, doctor, verify (the gate)
 
 Facilitators: [docs/FACILITATOR_GUIDE.md](docs/FACILITATOR_GUIDE.md). The finished version lives on the `solution` branch, one commit per step.
 
-The deck: [docs/SLIDES.html](docs/SLIDES.html) (open in a browser, `N` for notes), mirrored as [docs/From-WordPress-to-Astro-Payload.pptx](docs/From-WordPress-to-Astro-Payload.pptx) for Google Slides, and published at <https://claude.ai/artifact/NY9UmLfwZoxMdueYfCgahy>.
+The deck: [docs/SLIDES.html](docs/SLIDES.html) (open in a browser, `N` for notes), mirrored as [docs/From-WordPress-to-Astro-Payload.pptx](docs/From-WordPress-to-Astro-Payload.pptx) for Google Slides, and published at <https://claude.ai/artifact/EMiU9Cwts4xJ32hqq5KjtN>.
 
 ## Commands
 
