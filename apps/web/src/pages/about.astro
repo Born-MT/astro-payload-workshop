@@ -1,0 +1,36 @@
+---
+/**
+ * Ported from wordpress-reference/theme/page-about.php.
+ * The data comes from a Global: one document, like an ACF options page.
+ */
+import Base from '@/layouts/Base.astro'
+import { getGlobal } from '@/lib/payload'
+
+const profile = await getGlobal('profile')
+---
+
+<Base title={profile.name} description={profile.headline}>
+  <h1>{profile.name}</h1>
+  <p class="lede">{profile.headline}</p>
+
+  <div class="meta">
+    {profile.location && <span>{profile.location}</span>}
+    {profile.email && <a href={`mailto:${profile.email}`}>{profile.email}</a>}
+  </div>
+
+  <div class="prose">
+    {profile.bio.split(/\n\s*\n/).map((paragraph) => <p>{paragraph}</p>)}
+  </div>
+
+  {
+    profile.links?.length ? (
+      <div class="meta">
+        {profile.links.map((link) => (
+          <a class="pill ghost" href={link.url} target="_blank" rel="noopener">
+            {link.label}
+          </a>
+        ))}
+      </div>
+    ) : null
+  }
+</Base>

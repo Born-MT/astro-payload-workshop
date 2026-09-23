@@ -152,7 +152,26 @@ async function seed() {
     }
   }
 
-  // TODO (step 5): seed the profile global with payload.updateGlobal({ slug: 'profile', data: {...} }).
+  // 4. Profile global (step 5). Ported from the wp_options rows in sample-content.sql.
+  //    A global always exists, so this is an update, not a find-then-create. Replace with you.
+  const profile = await payload.findGlobal({ slug: 'profile' })
+  if (!profile.name) {
+    await payload.updateGlobal({
+      slug: 'profile',
+      data: {
+        name: 'Sam Borg',
+        headline: 'WordPress developer moving to Astro + Payload',
+        bio: 'I have built WordPress sites for small businesses in Malta since 2022. I am now learning to model content in code and to ship fast, accessible front-ends with Astro. I want my next project to be typed end to end.',
+        email: 'sam@example.com',
+        location: 'Valletta, Malta',
+        links: [
+          { label: 'GitHub', url: 'https://github.com/example' },
+          { label: 'LinkedIn', url: 'https://www.linkedin.com/in/example' },
+        ],
+      },
+    })
+    payload.logger.info('Filled in the profile global')
+  }
 
   payload.logger.info('Seed complete')
 }

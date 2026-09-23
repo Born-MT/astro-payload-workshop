@@ -9,6 +9,7 @@ import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Services } from './collections/Services'
 import { Projects } from './collections/Projects'
+import { Profile } from './globals/Profile'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -26,6 +27,8 @@ export default buildConfig({
   // WordPress analogy: every entry here is a `register_post_type()` call.
   // Add your new collection to this array or it does not exist.
   collections: [Users, Media, Services, Projects],
+  // WordPress analogy: an ACF options page. One document each, no list.
+  globals: [Profile],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
