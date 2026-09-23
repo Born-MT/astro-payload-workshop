@@ -1,5 +1,6 @@
 ---
 /** Ported from wordpress-reference/theme/single-project.php */
+import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 import Base from '@/layouts/Base.astro'
 import { getDocBySlug, mediaUrl } from '@/lib/payload'
 
@@ -16,6 +17,8 @@ const services = (project.services ?? []).filter((s) => typeof s === 'object')
 // Card B
 const hero = typeof project.heroImage === 'object' ? project.heroImage : null
 const heroSrc = mediaUrl(hero?.sizes?.hero?.url ?? hero?.url)
+// Card C: Lexical JSON -> HTML at render time. WordPress analogy: the_content() applying filters.
+const bodyHtml = project.body ? convertLexicalToHTML({ data: project.body }) : ''
 ---
 
 <Base title={project.title} description={project.summary}>
@@ -68,6 +71,8 @@ const heroSrc = mediaUrl(hero?.sizes?.hero?.url ?? hero?.url)
       </div>
     ) : null
   }
+
+  {bodyHtml && <div class="prose" set:html={bodyHtml} />}
 
   {
     services.length > 0 && (

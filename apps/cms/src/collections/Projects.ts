@@ -65,6 +65,13 @@ export const Projects: CollectionConfig = {
     },
     // Card B — WordPress analogy: ACF Image field, backed by the Media Library.
     { name: 'heroImage', type: 'upload', relationTo: 'media' },
+    // Card C — WordPress analogy: ACF WYSIWYG. Stored as Lexical JSON, not HTML.
+    {
+      name: 'body',
+      type: 'richText',
+      label: 'Story',
+      admin: { description: 'The problem, what you built, what you learned.' },
+    },
     { name: 'projectUrl', type: 'text', label: 'Live URL', admin: { position: 'sidebar' } },
     { name: 'repoUrl', type: 'text', label: 'Repository URL', admin: { position: 'sidebar' } },
     {

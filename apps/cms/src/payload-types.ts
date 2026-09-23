@@ -243,6 +243,24 @@ export interface Project {
    */
   summary: string;
   heroImage?: (number | null) | Media;
+  /**
+   * The problem, what you built, what you learned.
+   */
+  body?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
   projectUrl?: string | null;
   repoUrl?: string | null;
   completedOn: string;
@@ -444,6 +462,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   role?: T;
   summary?: T;
   heroImage?: T;
+  body?: T;
   projectUrl?: T;
   repoUrl?: T;
   completedOn?: T;

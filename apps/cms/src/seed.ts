@@ -11,6 +11,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { getPayload } from 'payload'
 import config from './payload.config'
+import type { Project } from './payload-types'
 
 export const ADMIN_EMAIL = 'admin@webee.local'
 export const ADMIN_PASSWORD = 'workshop123'
@@ -119,6 +120,45 @@ const projectServices: Record<string, string[]> = {
   'valletta-arts-festival': ['brand-ui-design', 'growth-seo'],
 }
 
+// Card C: Lexical JSON, the shape the admin editor saves. A heading, two paragraphs, a list.
+// Typed from the generated Project type so a wrong shape fails typecheck, not the editor.
+type Story = NonNullable<Project['body']>
+type StoryNode = Story['root']['children'][number]
+const text = (t: string): StoryNode => ({ type: 'text', text: t, version: 1, format: 0, mode: 'normal', style: '', detail: 0 })
+const block = (type: string, children: StoryNode[], extra: Record<string, unknown> = {}): StoryNode => ({
+  type,
+  children,
+  version: 1,
+  format: '',
+  indent: 0,
+  direction: 'ltr',
+  ...extra,
+})
+const artisanStory: Story = {
+  root: {
+    type: 'root',
+    version: 1,
+    format: '',
+    indent: 0,
+    direction: 'ltr',
+    children: [
+      block('heading', [text('The problem')], { tag: 'h2' }),
+      block('paragraph', [text('Sixty makers, one WooCommerce site, nine seconds to first paint. Every product edit went through the agency.')]),
+      block('heading', [text('What we built')], { tag: 'h2' }),
+      block('paragraph', [text('A Payload CMS the makers log into themselves, and an Astro storefront that renders their products as plain HTML.')]),
+      block(
+        'list',
+        [
+          block('listitem', [text('Product and maker collections, typed end to end')], { value: 1 }),
+          block('listitem', [text('Stripe checkout on a server endpoint, no client JavaScript')], { value: 2 }),
+          block('listitem', [text('Largest Contentful Paint under a second on 3G')], { value: 3 }),
+        ],
+        { listType: 'bullet', tag: 'ul', start: 1 },
+      ),
+    ],
+  },
+}
+
 async function seed() {
   const payload = await connect()
 
@@ -189,6 +229,12 @@ async function seed() {
   if (artisan.docs[0] && !artisan.docs[0].heroImage) {
     await payload.update({ collection: 'projects', id: artisan.docs[0].id, data: { heroImage: hero.id } })
     payload.logger.info('Attached the hero image to "Maltese Artisan Marketplace"')
+  }
+
+  // Card C: the story. In WP this would be post_content HTML; Payload stores the editor's JSON.
+  if (artisan.docs[0] && !artisan.docs[0].body) {
+    await payload.update({ collection: 'projects', id: artisan.docs[0].id, data: { body: artisanStory } })
+    payload.logger.info('Wrote the story on "Maltese Artisan Marketplace"')
   }
 
   // 4. Profile global (step 5). Ported from the wp_options rows in sample-content.sql.
