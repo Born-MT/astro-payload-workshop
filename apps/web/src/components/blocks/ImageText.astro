@@ -1,0 +1,22 @@
+---
+import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
+import type { Project } from '@cms/payload-types'
+import { mediaUrl } from '@/lib/payload'
+
+type Block = NonNullable<Project['layout']>[number]
+interface Props {
+  block: Extract<Block, { blockType: 'imageText' }>
+}
+
+const { block } = Astro.props
+const image = typeof block.image === 'object' ? block.image : null
+const src = mediaUrl(image?.sizes?.card?.url ?? image?.url)
+const html = convertLexicalToHTML({ data: block.text })
+const imageFirst = (block.imageSide ?? 'left') === 'left'
+---
+
+<div class="grid">
+  {imageFirst && src && <img src={src} alt={image?.alt ?? ''} loading="lazy" />}
+  <div class="prose" set:html={html} />
+  {!imageFirst && src && <img src={src} alt={image?.alt ?? ''} loading="lazy" />}
+</div>

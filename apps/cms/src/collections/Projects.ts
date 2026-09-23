@@ -1,5 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
+import { ImageText } from '../blocks/ImageText'
+import { Quote } from '../blocks/Quote'
+
 /**
  * Ported from wordpress-reference/portfolio-plugin:
  *   register_post_type('project')     -> this collection
@@ -79,6 +82,13 @@ export const Projects: CollectionConfig = {
       type: 'date',
       required: true,
       admin: { position: 'sidebar', date: { pickerAppearance: 'dayOnly' } },
+    },
+    // Card E — WordPress analogy: ACF Flexible Content / Gutenberg. Each block is its own shape.
+    {
+      name: 'layout',
+      type: 'blocks',
+      blocks: [Quote, ImageText],
+      admin: { description: 'Optional flexible sections rendered under the story.' },
     },
     // Card D — WordPress analogy: the Yoast box. A group is an ACF group: one object, named sub-fields.
     {

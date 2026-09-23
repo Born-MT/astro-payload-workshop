@@ -2,6 +2,7 @@
 /** Ported from wordpress-reference/theme/single-project.php */
 import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 import Base from '@/layouts/Base.astro'
+import Blocks from '@/components/blocks/Blocks.astro'
 import { getDocBySlug, mediaUrl } from '@/lib/payload'
 
 const { slug } = Astro.params
@@ -82,6 +83,8 @@ const metaDescription = project.seo?.description || project.summary
   }
 
   {bodyHtml && <div class="prose" set:html={bodyHtml} />}
+
+  <Blocks blocks={project.layout} />
 
   {
     services.length > 0 && (

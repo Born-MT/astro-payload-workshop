@@ -1,0 +1,28 @@
+---
+/**
+ * Card E — renders a `blocks` field. WordPress analogy: the loop over an ACF Flexible Content
+ * field, `switch (get_row_layout())`, one template part per layout.
+ */
+import type { Project } from '@cms/payload-types'
+import Quote from './Quote.astro'
+import ImageText from './ImageText.astro'
+
+interface Props {
+  blocks: Project['layout']
+}
+
+const { blocks } = Astro.props
+---
+
+{
+  blocks?.map((block) => {
+    switch (block.blockType) {
+      case 'quote':
+        return <Quote block={block} />
+      case 'imageText':
+        return <ImageText block={block} />
+      default:
+        return null
+    }
+  })
+}

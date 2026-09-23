@@ -252,6 +252,24 @@ async function seed() {
     payload.logger.info('Set SEO fields on "Maltese Artisan Marketplace"')
   }
 
+  // Card E: one block. The editor can add, reorder and remove more in the admin panel.
+  if (artisan.docs[0] && !artisan.docs[0].layout?.length) {
+    await payload.update({
+      collection: 'projects',
+      id: artisan.docs[0].id,
+      data: {
+        layout: [
+          {
+            blockType: 'quote',
+            quote: 'For the first time our makers update their own pages, and the site is faster than anything we had before.',
+            attribution: 'Programme lead, Malta Crafts Council',
+          },
+        ],
+      },
+    })
+    payload.logger.info('Added a quote block to "Maltese Artisan Marketplace"')
+  }
+
   // 4. Profile global (step 5). Ported from the wp_options rows in sample-content.sql.
   //    A global always exists, so this is an update, not a find-then-create. Replace with you.
   const profile = await payload.findGlobal({ slug: 'profile' })

@@ -1,0 +1,15 @@
+---
+import type { Project } from '@cms/payload-types'
+
+type Block = NonNullable<Project['layout']>[number]
+interface Props {
+  block: Extract<Block, { blockType: 'quote' }>
+}
+
+const { block } = Astro.props
+---
+
+<blockquote class="prose">
+  <p>{block.quote}</p>
+  {block.attribution && <footer>{block.attribution}</footer>}
+</blockquote>

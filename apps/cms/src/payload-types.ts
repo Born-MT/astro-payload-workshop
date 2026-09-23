@@ -264,6 +264,42 @@ export interface Project {
   projectUrl?: string | null;
   repoUrl?: string | null;
   completedOn: string;
+  /**
+   * Optional flexible sections rendered under the story.
+   */
+  layout?:
+    | (
+        | {
+            quote: string;
+            attribution?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'quote';
+          }
+        | {
+            image: number | Media;
+            text: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            imageSide?: ('left' | 'right') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'imageText';
+          }
+      )[]
+    | null;
   seo?: {
     /**
      * Falls back to the title.
@@ -476,6 +512,27 @@ export interface ProjectsSelect<T extends boolean = true> {
   projectUrl?: T;
   repoUrl?: T;
   completedOn?: T;
+  layout?:
+    | T
+    | {
+        quote?:
+          | T
+          | {
+              quote?: T;
+              attribution?: T;
+              id?: T;
+              blockName?: T;
+            };
+        imageText?:
+          | T
+          | {
+              image?: T;
+              text?: T;
+              imageSide?: T;
+              id?: T;
+              blockName?: T;
+            };
+      };
   seo?:
     | T
     | {
