@@ -1,0 +1,997 @@
+<title>From WordPress to Astro + Payload</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #0e1014;
+    --stage: #14171d;
+    --surface: #1b1f27;
+    --line: #2a2f3a;
+    --text: #eceef3;
+    --muted: #9ea7b8;
+    --faint: #6b7385;
+    --accent: #ffcf3f;
+    --accent-ink: #1a1400;
+    --wp: #5aa9d6;
+    --wp-dim: #1d3a4c;
+    --kit: #f0883e;
+    --sp: #6ea3ff;
+    --ok: #7ed3a0;
+    --display: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif;
+    --body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 22px;
+    line-height: 1.45;
+    overflow: hidden;
+  }
+  a { color: inherit; }
+
+  /* ---- Stage: fixed 1280x720, scaled to fit ---- */
+  #viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+  #stage {
+    width: 1280px; height: 720px;
+    position: relative;
+    transform-origin: center center;
+    background: var(--stage);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    padding: 64px 80px 72px;
+    display: none;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .slide.active { display: flex; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 15px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 14px;
+  }
+  .eyebrow .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .eyebrow .dot.m1 { background: var(--accent); }
+  .eyebrow .dot.m2 { background: var(--ok); }
+  .eyebrow .dot.m3 { background: var(--sp); }
+  .eyebrow .dot.none { background: var(--faint); }
+  .eyebrow .time { margin-left: auto; color: var(--faint); letter-spacing: .06em; text-transform: none; }
+
+  h1, h2 {
+    font-family: var(--display);
+    margin: 0;
+    line-height: 1.05;
+    text-wrap: balance;
+    font-weight: 700;
+  }
+  h1 { font-size: 78px; font-weight: 800; letter-spacing: -.02em; }
+  h2 { font-size: 52px; letter-spacing: -.015em; }
+  h3 { font-family: var(--display); font-size: 26px; margin: 0; font-weight: 700; }
+  p { margin: 0; max-width: 62ch; }
+  .lede { font-size: 27px; color: var(--muted); max-width: 40ch; }
+  .accent { color: var(--accent); }
+  .wpc { color: var(--wp); }
+  strong { font-weight: 600; color: var(--text); }
+  ul { margin: 0; padding-left: 1.1em; }
+  li { margin: 0 0 .45em; }
+  li::marker { color: var(--accent); }
+
+  code, pre { font-family: var(--mono); }
+  code { font-size: .92em; color: var(--accent); }
+  pre {
+    margin: 0;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 20px 24px;
+    font-size: 18px;
+    line-height: 1.5;
+    overflow: auto;
+    color: var(--text);
+    border-radius: 6px;
+    flex: 1;
+    min-height: 0;
+  }
+  pre .c { color: var(--faint); }
+  pre .k { color: var(--wp); }
+  pre .s { color: var(--ok); }
+  pre .y { color: var(--accent); }
+  .side-wp pre .k { color: var(--wp); }
+
+  /* Side-by-side comparison: WP left (blue rail), new stack right (yellow rail) */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    flex: 1;
+    min-height: 0;
+  }
+  .side {
+    display: flex; flex-direction: column; gap: 12px;
+    border-top: 4px solid var(--line);
+    padding-top: 14px;
+    min-height: 0;
+  }
+  .side-wp { border-top-color: var(--wp); }
+  .side-new { border-top-color: var(--accent); }
+  .side .label {
+    font-family: var(--mono); font-size: 14px; letter-spacing: .1em; text-transform: uppercase;
+  }
+  .side-wp .label { color: var(--wp); }
+  .side-new .label { color: var(--accent); }
+  .side .file { font-family: var(--mono); font-size: 16px; color: var(--muted); }
+
+  /* Three models */
+  .models { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; flex: 1; align-content: start; }
+  .model {
+    border-top: 4px solid var(--accent);
+    padding-top: 18px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .model:nth-child(2) { border-top-color: var(--ok); }
+  .model:nth-child(3) { border-top-color: var(--sp); }
+  .model .n { font-family: var(--mono); font-size: 15px; letter-spacing: .1em; color: var(--muted); }
+  .model h3 { font-size: 30px; }
+  .model p { color: var(--muted); font-size: 21px; }
+
+  /* Vocabulary table */
+  table { border-collapse: collapse; width: 100%; font-size: 20px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--mono); font-size: 14px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+  th.wp { color: var(--wp); } th.new { color: var(--accent); }
+  td code { color: var(--text); font-size: .9em; }
+  td.new code { color: var(--accent); }
+  td.none { color: var(--faint); font-style: italic; }
+
+  /* Architecture diagram (CSS boxes) */
+  .arch { display: grid; grid-template-columns: 1fr 64px 1fr 64px 1fr; align-items: center; gap: 0; flex: 1; align-content: center; }
+  .box { border: 1px solid var(--line); background: var(--surface); padding: 22px 24px; display: flex; flex-direction: column; gap: 8px; border-radius: 6px; }
+  .box h3 { font-size: 28px; }
+  .box .sub { font-family: var(--mono); font-size: 15px; color: var(--muted); }
+  .box ul { font-size: 19px; color: var(--muted); padding-left: 1em; margin-top: 6px; }
+  .box.hot { border-color: var(--accent); }
+  .arrow { text-align: center; font-family: var(--mono); color: var(--accent); font-size: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .arrow .line { width: 100%; height: 2px; background: var(--accent); position: relative; }
+  .arrow .line::after { content: ''; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left-color: var(--accent); }
+  .arrow.back .line::after { right: auto; left: -1px; border-left-color: transparent; border-right-color: var(--accent); }
+
+  /* Habit / step lists */
+  .steps { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 40px; flex: 1; align-content: start; }
+  .step { display: grid; grid-template-columns: 56px 1fr; gap: 14px; align-items: start; }
+  .step .n { font-family: var(--display); font-weight: 800; font-size: 40px; color: var(--accent); line-height: 1; }
+  .step h3 { font-size: 24px; }
+  .step p { color: var(--muted); font-size: 20px; }
+
+  .two { display: grid; grid-template-columns: 1.1fr 1fr; gap: 40px; flex: 1; min-height: 0; }
+  .col { display: flex; flex-direction: column; gap: 16px; min-height: 0; }
+
+  .tag { display: inline-block; font-family: var(--mono); font-size: 14px; letter-spacing: .08em; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .tag.kit { border-color: var(--kit); color: var(--kit); }
+  .tag.sp { border-color: var(--sp); color: var(--sp); }
+  .tag.y { border-color: var(--accent); color: var(--accent); }
+
+  .callout {
+    border-left: 4px solid var(--accent);
+    background: var(--surface);
+    padding: 16px 22px;
+    font-size: 22px;
+    max-width: 100%;
+  }
+  .callout.q { border-left-color: var(--sp); }
+
+  .timeline { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; flex: 1; align-content: start; }
+  .tl { border: 1px solid var(--line); background: var(--surface); padding: 18px 20px; border-radius: 6px; display: flex; flex-direction: column; gap: 8px; }
+  .tl .when { font-family: var(--mono); font-size: 14px; color: var(--accent); letter-spacing: .08em; }
+  .tl h3 { font-size: 22px; }
+  .tl p { color: var(--muted); font-size: 18px; }
+
+  .big-cmd { font-family: var(--mono); font-size: 34px; color: var(--accent); }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 10px 28px; font-size: 22px; align-content: start; }
+  .kv dt { font-family: var(--mono); color: var(--muted); font-size: 17px; padding-top: 4px; }
+  .kv dd { margin: 0; }
+  .kv dd code { color: var(--text); background: var(--bg); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--line); }
+
+
+  /* Jargon slides: denser table */
+  .slide.glossary { gap: 14px; padding-bottom: 56px; }
+  .glossary h2 { font-size: 42px; }
+  .glossary table { font-size: 15px; table-layout: fixed; }
+  .glossary th, .glossary td { padding: 5px 10px; line-height: 1.25; }
+  .glossary col.c1 { width: 23%; } .glossary col.c2 { width: 55%; } .glossary col.c3 { width: 22%; }
+  .glossary td.w { font-family: var(--mono); font-size: 14px; color: var(--text); }
+  .glossary td.m { color: var(--muted); }
+  .glossary td.m b { color: var(--text); font-weight: 600; }
+  .glossary td.wp { color: var(--wp); }
+  .glossary td.none { color: var(--faint); font-style: italic; }
+  .glossary .foot { font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .04em; }
+  .title-slide { justify-content: flex-end; gap: 22px; }
+  .title-slide .brand { font-family: var(--display); font-weight: 800; font-size: 26px; letter-spacing: .02em; position: absolute; top: 60px; left: 80px; }
+  .title-slide .brand span { color: var(--accent); }
+  .title-slide .meta { font-family: var(--mono); font-size: 17px; color: var(--muted); display: flex; gap: 28px; }
+
+  /* Chrome */
+  .footer {
+    position: absolute; left: 80px; right: 80px; bottom: 28px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: var(--mono); font-size: 14px; color: var(--faint); letter-spacing: .06em;
+  }
+  .progress { position: absolute; left: 0; bottom: 0; height: 3px; background: var(--accent); width: 0; transition: width .25s ease; }
+
+  #notes {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 440px;
+    background: var(--bg); border-left: 1px solid var(--line);
+    padding: 28px 30px; overflow: auto; font-size: 17px; line-height: 1.55; color: var(--text);
+    transform: translateX(100%); transition: transform .2s ease;
+  }
+  #notes.open { transform: none; }
+  #notes h4 { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; }
+  #notes p { margin: 0 0 12px; max-width: none; }
+  #notes .check { border-left: 3px solid var(--sp); padding-left: 12px; color: var(--muted); }
+  #notes .check b { color: var(--sp); font-weight: 600; }
+  #help {
+    position: fixed; left: 16px; bottom: 12px; font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: .06em;
+  }
+  #help b { color: var(--muted); font-weight: 500; }
+  .notes-src { display: none; }
+  @media (prefers-reduced-motion: reduce) { .progress, #notes { transition: none; } }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+
+<div id="viewport">
+<div id="stage">
+
+<!-- 1 -->
+<section class="slide title-slide" data-time="0:00">
+  <div class="brand">Webee<span>.</span> L&amp;D</div>
+  <h1>From WordPress<br>to Astro + Payload</h1>
+  <p class="lede">A CMS and a frontend, with the content model in TypeScript. By the end of the hour: your own developer portfolio on Payload and Astro.</p>
+  <div class="meta"><span>25 September 2026</span><span>30 min talk · 60 min hands-on</span><span>Bring your laptop, pnpm verify 0 green</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide" data-time="0:00 – 4:00">
+  <div class="eyebrow"><span class="dot none"></span>Part 1 · WordPress vs Astro + Payload<span class="time">0 – 4 min</span></div>
+  <h2>WordPress vs Astro + Payload: what changes</h2>
+  <div class="compare" style="font-size:20px">
+    <div class="side side-wp">
+      <span class="label">WordPress today</span>
+      <ul>
+        <li>The content model (CPTs, ACF groups) is rows in <code>wp_postmeta</code>, built in wp-admin. No diff, no review, no rollback.</li>
+        <li>Renaming an ACF field: edit it in wp-admin on every environment, then grep the templates for the old key.</li>
+        <li>Plugins for SEO, caching, images, forms. Each runs PHP on every request and needs updating.</li>
+        <li>First contentful paint measured in seconds: theme JS, plugin CSS, uncached PHP render.</li>
+      </ul>
+    </div>
+    <div class="side side-new">
+      <span class="label">Astro + Payload</span>
+      <ul>
+        <li>The content model is a TypeScript file in git. It goes through a pull request like any other code.</li>
+        <li>Payload generates TypeScript types from the collections; Astro imports them. Rename a field and the build lists the broken templates.</li>
+        <li>Astro renders HTML on the server from Payload's REST API. No database connection, no client JS unless you add it.</li>
+        <li>Claude Code reads the collections, the types and <code>CLAUDE.md</code>, and writes the boilerplate under review.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 3 -->
+<section class="slide" data-time="0:00 – 4:00">
+  <div class="eyebrow"><span class="dot none"></span>Part 1 · why teams make the move<span class="time">0 – 4 min</span></div>
+  <h2>Why teams move to Astro + Payload</h2>
+  <div class="steps" style="gap:12px 40px">
+    <div class="step"><span class="n">1</span><div><h3>Performance by default</h3><p style="font-size:19px">Astro emits static HTML; JavaScript ships only for components marked as islands. No caching layer, image plugin or minifier to configure.</p></div></div>
+    <div class="step"><span class="n">2</span><div><h3>A much smaller attack surface</h3><p style="font-size:19px">No third-party PHP executing per request, no <code>wp-admin</code> login endpoint on the public site, and the frontend holds no database credentials.</p></div></div>
+    <div class="step"><span class="n">3</span><div><h3>The content model is code</h3><p style="font-size:19px">Collections and fields are TypeScript in git: reviewed in PRs, versioned, identical on every environment. No schema drift between staging and production.</p></div></div>
+    <div class="step"><span class="n">4</span><div><h3>Typed from field to template</h3><p style="font-size:19px"><code>payload generate:types</code> emits one <code>Project</code> type; Astro templates import it. A renamed field fails the build with the list of affected files.</p></div></div>
+    <div class="step"><span class="n">5</span><div><h3>Open source, self-hosted, one language</h3><p style="font-size:19px">Payload and Astro are MIT licensed. No per-seat fees or premium plugin renewals, TypeScript on both sides, deployable to any Node or static host.</p></div></div>
+    <div class="step"><span class="n">6</span><div><h3>npm packages, not plugins</h3><p style="font-size:19px">Astro components, npm packages, and a schema an AI tool can read because it is code. The frontend is decoupled: a redesign does not touch the content.</p></div></div>
+  </div>
+  <div class="callout" style="font-size:20px;padding:12px 22px">Editors keep an admin UI, rich text, media library, drafts and roles. Developers stop maintaining plugin updates.</div>
+</section>
+
+<!-- 4 -->
+<section class="slide" data-time="0:00 – 4:00">
+  <div class="eyebrow"><span class="dot none"></span>Part 1 · the whole talk in three ideas<span class="time">0 – 4 min</span></div>
+  <h2>Three ideas the rest of the talk builds on</h2>
+  <div class="models">
+    <div class="model">
+      <span class="n">Idea 1</span>
+      <h3>The content model lives in code</h3>
+      <p>A collection file is the CPT registration and the ACF group in one TypeScript object. Payload generates the admin UI and the REST API from it.</p>
+    </div>
+    <div class="model">
+      <span class="n">Idea 2</span>
+      <h3>The frontend only consumes the REST API</h3>
+      <p>Astro has no database connection. It fetches JSON from Payload in the frontmatter and renders HTML on the server.</p>
+    </div>
+    <div class="model">
+      <span class="n">Idea 3</span>
+      <h3>Claude Code writes, you review</h3>
+      <p>It generates the code. You read the diff and decide. If you cannot explain a diff, you do not accept it.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="slide" data-time="4:00 – 7:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · the picture<span class="time">4 – 7 min</span></div>
+  <h2>Two apps, one REST API between them</h2>
+  <div class="arch">
+    <div class="box hot">
+      <h3>Payload</h3>
+      <span class="sub">apps/cms · localhost:3300</span>
+      <ul>
+        <li>Collections defined in TypeScript</li>
+        <li>Admin panel at <code>/admin</code>, generated</li>
+        <li>REST API at <code>/api/…</code>, generated</li>
+        <li>SQLite file for the workshop</li>
+      </ul>
+    </div>
+    <div class="arrow"><span>GET /api/services</span><div class="line"></div><span>JSON</span></div>
+    <div class="box hot">
+      <h3>Astro</h3>
+      <span class="sub">apps/web · localhost:4321</span>
+      <ul>
+        <li>Pages are files: <code>pages/services/[slug].astro</code></li>
+        <li>Fetches in the frontmatter, renders HTML</li>
+        <li>Zero JavaScript shipped unless you ask</li>
+        <li>Types imported from the CMS</li>
+      </ul>
+    </div>
+    <div class="arrow"><span>HTML</span><div class="line"></div><span>&nbsp;</span></div>
+    <div class="box">
+      <h3>Browser</h3>
+      <span class="sub">whoever reads your portfolio</span>
+      <ul>
+        <li>Plain HTML and CSS</li>
+        <li>Fast: static HTML and CSS, no hydration</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 6 -->
+<section class="slide glossary" data-time="4:00 – 7:00">
+  <div class="eyebrow"><span class="dot none"></span>Part 1 · jargon · the toolchain<span class="time">4 – 7 min</span></div>
+  <h2>Toolchain terms you will see in the logs</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">Monorepo</td><td class="m">One repo, several apps developed together: apps/cms and apps/web</td><td class="wp">Theme + custom plugin in one repo</td></tr>
+      <tr><td class="w">pnpm, workspace</td><td class="m">The package manager. A workspace is the set of packages in this repo</td><td class="wp">Composer, roughly</td></tr>
+      <tr><td class="w">pnpm --filter web</td><td class="m">Run a script in one app. dev:cms and dev:web are shortcuts for it</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">Node</td><td class="m">The runtime both apps run on</td><td class="wp">PHP</td></tr>
+      <tr><td class="w">TypeScript, type</td><td class="m">JavaScript plus a description of the shape of things. Service is a type</td><td class="wp">Docblocks that are actually checked</td></tr>
+      <tr><td class="w">Typecheck</td><td class="m">pnpm typecheck. Every place a type does not fit, before anything runs</td><td class="wp">What PHP finds in production</td></tr>
+      <tr><td class="w">async / await</td><td class="m">Fetching is async; await pauses until the result is in</td><td class="wp">PHP just waits</td></tr>
+      <tr><td class="w">.env</td><td class="m">Secrets and settings read at boot. Never committed</td><td class="wp">wp-config.php</td></tr>
+      <tr><td class="w">SQLite, Drizzle</td><td class="m">A one-file database, and the query builder that talks to it</td><td class="wp">MySQL, wpdb</td></tr>
+      <tr><td class="w">Next.js, Turbopack</td><td class="m">What the Payload admin runs on, and its bundler. In the CMS logs; you never write it</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">Vite, HMR</td><td class="m">What Astro builds with, and hot reload. In the web logs</td><td class="none">no equivalent</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 7 -->
+<section class="slide" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · Payload in WordPress vocabulary<span class="time">7 – 13 min</span></div>
+  <h2>This file <span class="accent">is</span> the CPT and the ACF group</h2>
+  <div class="compare">
+    <div class="side side-wp">
+      <span class="label">WordPress</span>
+      <span class="file">plugin.php + ACF field group</span>
+<pre><span class="k">register_post_type</span>( <span class="s">'service'</span>, [
+  <span class="s">'public'</span>       => true,
+  <span class="s">'has_archive'</span>  => true,
+  <span class="s">'show_in_rest'</span> => true,
+  <span class="s">'supports'</span>     => [<span class="s">'title'</span>],
+] );
+
+<span class="c">// then, in wp-admin, click together:</span>
+<span class="c">// Field group "Service details"</span>
+<span class="c">//   summary   textarea, required, max 240</span>
+<span class="c">//   icon      select: code / design / …</span>
+<span class="c">//   order     number</span></pre>
+    </div>
+    <div class="side side-new">
+      <span class="label">Payload</span>
+      <span class="file">apps/cms/src/collections/Services.ts</span>
+<pre><span class="k">export const</span> Services: CollectionConfig = {
+  slug: <span class="s">'services'</span>,
+  admin: { useAsTitle: <span class="s">'title'</span> },
+  access: { read: () => true, <span class="c">/* … */</span> },
+  fields: [
+    { name: <span class="s">'title'</span>,   type: <span class="s">'text'</span>, required: true },
+    { name: <span class="s">'slug'</span>,    type: <span class="s">'text'</span>, unique: true },
+    { name: <span class="s">'summary'</span>, type: <span class="s">'textarea'</span>,
+      required: true, maxLength: 240 },
+    { name: <span class="s">'icon'</span>,    type: <span class="s">'select'</span>, options: […] },
+    { name: <span class="s">'order'</span>,   type: <span class="s">'number'</span> },
+  ],
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 8 -->
+<section class="slide" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · Payload in WordPress vocabulary<span class="time">7 – 13 min</span></div>
+  <h2>One collection file generates three things</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div><h3>An admin panel</h3><p>Every field becomes a form control at <code>/admin</code>. Change the file, restart, the form changes. No screen to click through.</p></div></div>
+    <div class="step"><span class="n">2</span><div><h3>A REST API</h3><p><code>/api/services</code> exists the moment the collection is registered. Filtering, sorting and pagination are query params.</p></div></div>
+    <div class="step"><span class="n">3</span><div><h3>TypeScript types</h3><p><code>pnpm generate:types</code> writes a <code>Service</code> type the frontend imports. Rename a field and the build finds every use.</p></div></div>
+    <div class="step"><span class="n">+</span><div><h3>Nothing until it is registered</h3><p>Add the collection to the array in <code>payload.config.ts</code> or it does not exist. The most common step-1 failure.</p></div></div>
+  </div>
+  <div class="callout">Live demo: add <code>{ name: 'tagline', type: 'text' }</code> to Services.ts, restart the CMS, check <code>/admin</code>, then <code>GET /api/services</code>.</div>
+</section>
+
+<!-- 9 -->
+<section class="slide" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · the vocabulary map<span class="time">7 – 13 min</span></div>
+  <h2>The vocabulary map</h2>
+  <table style="font-size:17px">
+    <thead><tr><th class="wp">WordPress</th><th class="new">Payload</th><th class="new">Astro</th></tr></thead>
+    <tbody>
+      <tr><td>Custom Post Type</td><td class="new"><code>collection</code></td><td class="none">—</td></tr>
+      <tr><td>ACF field group</td><td class="new"><code>fields: [ … ]</code></td><td class="none">—</td></tr>
+      <tr><td>ACF Options Page</td><td class="new"><code>global</code>: one document, no list</td><td class="none">—</td></tr>
+      <tr><td>Repeater / Post Object / Image / WYSIWYG</td><td class="new"><code>array</code> / <code>relationship</code> / <code>upload</code> / <code>richText</code></td><td class="none">—</td></tr>
+      <tr><td>Gutenberg blocks, Flexible Content</td><td class="new"><code>blocks</code></td><td>one component per block type</td></tr>
+      <tr><td><code>save_post</code>, <code>sanitize_title()</code></td><td class="new"><code>beforeChange</code>, <code>beforeValidate</code> hooks</td><td class="none">—</td></tr>
+      <tr><td><code>WP_Query</code> args</td><td class="new"><code>?where[slug][equals]=x&amp;sort=-date</code></td><td><code>getDocs('services', {…})</code></td></tr>
+      <tr><td><code>archive-*.php</code> / <code>single-*.php</code></td><td class="none">—</td><td><code>pages/services/index.astro</code>, <code>[slug].astro</code></td></tr>
+      <tr><td><code>header.php</code>, <code>footer.php</code> / <code>template-parts/</code></td><td class="none">—</td><td><code>layouts/Base.astro</code> / <code>components/</code></td></tr>
+      <tr><td><em>no equivalent</em></td><td class="new"><code>depth</code>: how far to populate relationships</td><td class="none">—</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 10 -->
+<section class="slide glossary" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · jargon · Payload, the model<span class="time">7 – 13 min</span></div>
+  <h2>Payload terms: collections and config</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">Collection</td><td class="m">A content type in one TypeScript file. Table, admin screen and API endpoint come free</td><td class="wp">CPT + ACF field group</td></tr>
+      <tr><td class="w">Global</td><td class="m">A single document, not a list. /api/globals/profile</td><td class="wp">Options page</td></tr>
+      <tr><td class="w">Document</td><td class="m">One row in a collection</td><td class="wp">A post</td></tr>
+      <tr><td class="w">Field</td><td class="m">One column: name, type, options</td><td class="wp">An ACF field</td></tr>
+      <tr><td class="w">slug</td><td class="m">Two meanings: the collection&#x27;s id (slug: &#x27;projects&#x27;), or a field you define for URLs</td><td class="wp">Post type name / post_name</td></tr>
+      <tr><td class="w">useAsTitle, admin.group</td><td class="m">What the list shows as the title; which sidebar heading it sits under</td><td class="wp">post_title, menu position</td></tr>
+      <tr><td class="w">admin.position: &#x27;sidebar&#x27;</td><td class="m">Field goes in the right-hand column of the edit screen</td><td class="wp">A sidebar meta box</td></tr>
+      <tr><td class="w">Access</td><td class="m">read, create, update, delete. Functions returning true/false. read: () =&gt; true is public</td><td class="wp">current_user_can()</td></tr>
+      <tr><td class="w">Hooks</td><td class="m">beforeValidate, beforeChange, afterChange, afterRead. Collection or field level</td><td class="wp">save_post, the_content</td></tr>
+      <tr><td class="w">payload.config.ts, registering</td><td class="m">The root config. A collection not in the collections array does not exist</td><td class="wp">functions.php, register_post_type()</td></tr>
+      <tr><td class="w">Auth / upload collection</td><td class="m">auth: true: documents can log in (users). upload: true: documents are files (media)</td><td class="wp">wp_users, Media Library</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 11 -->
+<section class="slide glossary" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · jargon · Payload, the fields<span class="time">7 – 13 min</span></div>
+  <h2>Payload terms: field types</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">text, textarea, number, select, checkbox, date, email</td><td class="m">The simple ones. select takes options</td><td class="wp">The matching ACF types</td></tr>
+      <tr><td class="w">array</td><td class="m">Repeatable group of sub-fields. Nested fields: [ … ], minRows, maxRows</td><td class="wp">Repeater</td></tr>
+      <tr><td class="w">group</td><td class="m">Sub-fields under one name, once</td><td class="wp">Group</td></tr>
+      <tr><td class="w">relationship</td><td class="m">Link to another collection. relationTo, hasMany</td><td class="wp">Post Object / Relationship</td></tr>
+      <tr><td class="w">upload</td><td class="m">Link to a file in the media collection</td><td class="wp">Image / File</td></tr>
+      <tr><td class="w">richText</td><td class="m">Formatted content, edited with Lexical, stored as JSON</td><td class="wp">WYSIWYG</td></tr>
+      <tr><td class="w">blocks</td><td class="m">A list where each item is one of several named shapes</td><td class="wp">Gutenberg / Flexible Content</td></tr>
+      <tr><td class="w">tabs, row, collapsible</td><td class="m">Layout only. Arrange the edit screen, store nothing</td><td class="wp">Tab / Accordion</td></tr>
+      <tr><td class="w">required, unique, defaultValue, maxLength</td><td class="m">Validation and defaults, as words in the file</td><td class="wp">ACF settings checkboxes</td></tr>
+      <tr><td class="w">index: true</td><td class="m">A database index. Use on fields you filter by</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">Lexical, convertLexicalToHTML</td><td class="m">The editor, and the function that turns its JSON into HTML for Astro</td><td class="wp">TinyMCE, the_content filter</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 12 -->
+<section class="slide glossary" data-time="7:00 – 13:00">
+  <div class="eyebrow"><span class="dot m1"></span>Part 1 · jargon · Payload, the API<span class="time">7 – 13 min</span></div>
+  <h2>Payload terms: REST API and data</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">GET /api/&lt;slug&gt;, /api/&lt;slug&gt;/&lt;id&gt;</td><td class="m">List (paginated) and one by id. Generated, no code</td><td class="wp">/wp-json/wp/v2/…</td></tr>
+      <tr><td class="w">GET /api/globals/&lt;slug&gt;</td><td class="m">One document, no list. Globals have their own path</td><td class="wp">/wp-json/acf/v3/options/…</td></tr>
+      <tr><td class="w">where</td><td class="m">The filter: ?where[slug][equals]=x. Operators: equals, contains, in, like, greater_than</td><td class="wp">WP_Query args, meta_query</td></tr>
+      <tr><td class="w">sort, limit, page</td><td class="m">sort=-completedOn (minus means descending). Page size defaults to 10</td><td class="wp">orderby, posts_per_page, paged</td></tr>
+      <tr><td class="w">Paginated response</td><td class="m">{ docs, totalDocs, page, totalPages, hasNextPage }. Your data is in docs</td><td class="wp">$query-&gt;posts, found_posts</td></tr>
+      <tr><td class="w">depth</td><td class="m">How many levels of relationships to populate. 0 = ids, 1 = documents inline</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">populated, number | Service</td><td class="m">A relationship returned as a document. The type says it may be either; guard with typeof</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">generate:types, payload-types.ts</td><td class="m">One type per collection, from the config. Run after every field change; Astro imports them</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">Database adapter, push: true</td><td class="m">db-sqlite here. push syncs the schema on boot, dev only; real projects use migrations</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">Seed, payload run, Local API</td><td class="m">pnpm seed runs seed.ts with Payload booted; payload.create() directly, no HTTP</td><td class="wp">WP-CLI import</td></tr>
+      <tr><td class="w">Versions, drafts, _status</td><td class="m">versions: { drafts: true } adds draft/published and a history</td><td class="wp">Post status, revisions</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 13 -->
+<section class="slide" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · Astro in WordPress vocabulary<span class="time">13 – 19 min</span></div>
+  <h2>The PHP at the top of the template is now the frontmatter</h2>
+  <div class="compare">
+    <div class="side side-wp">
+      <span class="label">WordPress</span>
+      <span class="file">archive-service.php</span>
+<pre><span class="k">&lt;?php</span> get_header();
+$q = <span class="k">new</span> WP_Query([
+  <span class="s">'post_type'</span> => <span class="s">'service'</span>,
+  <span class="s">'orderby'</span>   => <span class="s">'menu_order'</span>,
+]); <span class="k">?&gt;</span>
+
+&lt;h1&gt;What we do&lt;/h1&gt;
+&lt;div class="grid"&gt;
+<span class="k">&lt;?php while</span> ($q->have_posts()): $q->the_post();
+  get_template_part(<span class="s">'template-parts/content'</span>, <span class="s">'service'</span>);
+<span class="k">endwhile; ?&gt;</span>
+&lt;/div&gt;
+
+<span class="k">&lt;?php</span> get_footer();</pre>
+    </div>
+    <div class="side side-new">
+      <span class="label">Astro</span>
+      <span class="file">apps/web/src/pages/index.astro</span>
+<pre>---
+<span class="k">import</span> Base <span class="k">from</span> <span class="s">'@/layouts/Base.astro'</span>
+<span class="k">import</span> ServiceCard <span class="k">from</span> <span class="s">'@/components/ServiceCard.astro'</span>
+<span class="k">import</span> { getDocs } <span class="k">from</span> <span class="s">'@/lib/payload'</span>
+
+<span class="k">const</span> { docs: services } = <span class="k">await</span> getDocs(<span class="s">'services'</span>, {
+  sort: <span class="s">'order'</span>,
+})
+---
+&lt;Base title=<span class="s">"Services"</span>&gt;
+  &lt;h1&gt;What we do&lt;/h1&gt;
+  &lt;div class="grid"&gt;
+    {services.map((service) =&gt; (
+      &lt;ServiceCard service={service} /&gt;
+    ))}
+  &lt;/div&gt;
+&lt;/Base&gt;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 14 -->
+<section class="slide" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · Astro in WordPress vocabulary<span class="time">13 – 19 min</span></div>
+  <h2>File-based routing replaces the template hierarchy</h2>
+  <div class="two">
+    <div class="col" style="gap:10px">
+      <table style="font-size:17px">
+        <thead><tr><th class="wp">WordPress resolves…</th><th class="new">Astro: the file is the route</th></tr></thead>
+        <tbody>
+          <tr><td><code>/services/</code> → <code>archive-service.php</code></td><td class="new"><code>pages/services/index.astro</code></td></tr>
+          <tr><td><code>/services/web-dev/</code> → <code>single-service.php</code></td><td class="new"><code>pages/services/[slug].astro</code></td></tr>
+          <tr><td>404 → <code>404.php</code></td><td class="new"><code>404.astro</code>, or return a 404 <code>Response</code></td></tr>
+          <tr><td>rewrite rules, <code>flush_rewrite_rules()</code></td><td class="none">not a thing</td></tr>
+        </tbody>
+      </table>
+      <div class="callout" style="font-size:18px;padding:10px 16px">The square brackets in <code>[slug].astro</code> are the dynamic segment. <code>Astro.params.slug</code> is the value.</div>
+    </div>
+    <div class="col">
+      <span class="file" style="font-family:var(--mono);font-size:16px;color:var(--muted)">pages/services/[slug].astro</span>
+<pre>---
+<span class="k">const</span> { slug } = Astro.params
+<span class="k">const</span> service = <span class="k">await</span> getDocBySlug(<span class="s">'services'</span>, slug)
+
+<span class="k">if</span> (!service) {
+  <span class="k">return new</span> Response(null, { status: 404 })
+}
+---
+&lt;Base title={service.title}&gt;
+  &lt;h1&gt;{service.title}&lt;/h1&gt;
+  &lt;p&gt;{service.summary}&lt;/p&gt;
+&lt;/Base&gt;</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 15 -->
+<section class="slide" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · the query, and the one idea with no WP name<span class="time">13 – 19 min</span></div>
+  <h2>Querying: <code>where</code> in the query string, <span class="accent">depth</span> for relationships</h2>
+  <div class="compare">
+    <div class="side side-wp">
+      <span class="label">WordPress</span>
+      <span class="file">a relationship field gives you IDs</span>
+<pre>$ids = get_field(<span class="s">'services'</span>);   <span class="c">// [3, 1]</span>
+<span class="k">foreach</span> ($ids <span class="k">as</span> $id) {
+  $post = get_post($id);          <span class="c">// one query each</span>
+  echo $post->post_title;
+}</pre>
+      <p style="color:var(--muted);font-size:20px">Each related post is a separate <code>get_post()</code> call and a separate query.</p>
+    </div>
+    <div class="side side-new">
+      <span class="label">Payload</span>
+      <span class="file">GET /api/projects?depth=1</span>
+<pre>{
+  <span class="s">"title"</span>: <span class="s">"Harbour Ferries Booking"</span>,
+  <span class="s">"services"</span>: [
+    { <span class="s">"id"</span>: 1, <span class="s">"slug"</span>: <span class="s">"web-development"</span>,
+      <span class="s">"title"</span>: <span class="s">"Web Development"</span>, … }
+  ]
+}
+<span class="c">// depth=0 → "services": [1]</span>
+<span class="c">// depth=1 → populated one level, as above</span></pre>
+      <p style="color:var(--muted);font-size:20px">The generated type is <code>number | Service</code>: an id at depth 0, a document at depth 1. Guard with <code>typeof s === 'object'</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 16 -->
+<section class="slide glossary" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · jargon · Astro, the file<span class="time">13 – 19 min</span></div>
+  <h2>Astro terms: the .astro file</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">.astro file</td><td class="m">A component. Server code on top, HTML below. Pages and components are both .astro</td><td class="wp">A .php template</td></tr>
+      <tr><td class="w">Frontmatter</td><td class="m">Between the --- fences. Runs on the server, never in the browser</td><td class="wp">The PHP at the top</td></tr>
+      <tr><td class="w">Template, expression</td><td class="m">Below the fence. HTML with {js} inside. {items.map(…)} is the loop</td><td class="wp">&lt;?= $x ?&gt;, foreach</td></tr>
+      <tr><td class="w">Component</td><td class="m">A .astro file in src/components, used as a tag with attributes</td><td class="wp">get_template_part()</td></tr>
+      <tr><td class="w">Props, interface Props</td><td class="m">The values passed in. Astro.props. Declare their types with interface Props</td><td class="wp">$args</td></tr>
+      <tr><td class="w">Astro (the global)</td><td class="m">Astro.props, Astro.params, Astro.url, Astro.request</td><td class="wp">$post, get_query_var()</td></tr>
+      <tr><td class="w">Layout</td><td class="m">A component wrapping a whole page. &lt;Base title=&quot;…&quot;&gt;</td><td class="wp">get_header() + get_footer()</td></tr>
+      <tr><td class="w">Slot</td><td class="m">Where children go. &lt;slot /&gt;. Named: &lt;slot name=&quot;head&quot; /&gt;</td><td class="wp">wp_head(), roughly</td></tr>
+      <tr><td class="w">Scoped &lt;style&gt;</td><td class="m">Styles in a component only apply to that component&#x27;s HTML</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">set:html</td><td class="m">Render a string as HTML. For rich text. Trust the source</td><td class="wp">echo without escaping</td></tr>
+      <tr><td class="w">@/ and @cms/</td><td class="m">Import aliases: @/ is src/, @cms/payload-types is the CMS types</td><td class="wp">get_template_directory()</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 17 -->
+<section class="slide glossary" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · jargon · Astro, routes and rendering<span class="time">13 – 19 min</span></div>
+  <h2>Astro terms: routing and rendering</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">Page, file-based routing</td><td class="m">A .astro file in src/pages. Its path is its URL. No hierarchy, no rewrite rules</td><td class="wp">Template hierarchy</td></tr>
+      <tr><td class="w">[slug].astro, Astro.params</td><td class="m">Dynamic segment in brackets; Astro.params.slug is the value</td><td class="wp">single-*.php, get_query_var()</td></tr>
+      <tr><td class="w">[...path].astro</td><td class="m">Matches any depth</td><td class="wp">Catch-all rewrite</td></tr>
+      <tr><td class="w">Response, Astro.redirect</td><td class="m">Return one from the frontmatter: new Response(null, { status: 404 })</td><td class="wp">status_header(), wp_redirect()</td></tr>
+      <tr><td class="w">Endpoint</td><td class="m">A .ts file in pages/ exporting GET or POST. An API route in the web app</td><td class="wp">admin-ajax.php, a REST route</td></tr>
+      <tr><td class="w">Middleware</td><td class="m">src/middleware.ts. Runs before every request</td><td class="wp">template_redirect</td></tr>
+      <tr><td class="w">SSR</td><td class="m">Rendered per request. Content changes show on refresh. Our setting: output: &#x27;server&#x27;</td><td class="wp">How WordPress always works</td></tr>
+      <tr><td class="w">SSG, prerender, getStaticPaths</td><td class="m">Built once to HTML files. prerender = true per page; getStaticPaths lists the URLs</td><td class="wp">A full-page cache, done properly</td></tr>
+      <tr><td class="w">Adapter</td><td class="m">Lets an SSR site run somewhere: Node, Vercel, Cloudflare</td><td class="wp">The hosting-specific part</td></tr>
+      <tr><td class="w">astro dev / build / preview / check</td><td class="m">Dev server, production build, serve the build, typecheck</td><td class="wp">wp server</td></tr>
+      <tr><td class="w">Astro 7 daemon</td><td class="m">Under an AI agent, astro dev backgrounds itself. astro dev logs / status / stop</td><td class="none">no equivalent</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 18 -->
+<section class="slide glossary" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m2"></span>Part 1 · jargon · Astro, the browser side<span class="time">13 – 19 min</span></div>
+  <h2>Astro terms: client-side, and the collections name clash</h2>
+  <table>
+    <colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th class="new">Word</th><th>What it is</th><th class="wp">WordPress word</th></tr></thead>
+    <tbody>
+      <tr><td class="w">Zero JS by default</td><td class="m">No JavaScript ships unless you ask. A page of .astro components is plain HTML</td><td class="wp">The opposite of most themes</td></tr>
+      <tr><td class="w">Island</td><td class="m">One interactive component on a static page. React, Svelte, Vue, or plain &lt;script&gt;</td><td class="wp">A block with its own JS</td></tr>
+      <tr><td class="w">Hydration</td><td class="m">Loading the JS that makes an island interactive</td><td class="wp">wp_enqueue_script(), roughly</td></tr>
+      <tr><td class="w">client:load / idle / visible / only</td><td class="m">When to hydrate: now, when idle, when scrolled into view, or skip server rendering</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">&lt;script&gt; in a component</td><td class="m">Plain client JS. Astro bundles and dedupes it</td><td class="wp">wp_enqueue_script()</td></tr>
+      <tr><td class="w">Integration</td><td class="m">Official add-ons: @astrojs/react, sitemap, node. Listed in astro.config.mjs</td><td class="wp">A plugin, frontend side</td></tr>
+      <tr><td class="w">astro:assets, &lt;Image&gt;</td><td class="m">Astro&#x27;s image component. Resizes and optimises</td><td class="wp">wp_get_attachment_image()</td></tr>
+      <tr><td class="w">import.meta.env, PUBLIC_</td><td class="m">Env vars. Only PUBLIC_-prefixed ones reach the browser</td><td class="wp">getenv()</td></tr>
+      <tr><td class="w">Content collections</td><td class="m">Name clash: Astro&#x27;s own &quot;collections&quot; for local Markdown files. Not Payload&#x27;s. We have none</td><td class="none">no equivalent</td></tr>
+      <tr><td class="w">View transitions</td><td class="m">Animated navigation between pages. Opt-in. Not today</td><td class="none">no equivalent</td></tr>
+    </tbody>
+  </table>
+  <p class="foot">Full list with longer definitions: docs/GLOSSARY.md</p>
+</section>
+
+<!-- 19 -->
+<section class="slide" data-time="13:00 – 19:00">
+  <div class="eyebrow"><span class="dot m1"></span><span class="dot m2"></span>Part 1 · similar, different, new<span class="time">13 – 19 min</span></div>
+  <h2>Same concepts, different architecture, three new terms</h2>
+  <div class="models">
+    <div class="model" style="border-top-color:var(--ok)">
+      <span class="n">Maps one to one</span>
+      <ul style="font-size:20px">
+        <li>CPT → <code>collection</code></li>
+        <li>ACF field group → <code>fields</code></li>
+        <li>Options page → <code>global</code></li>
+        <li>Archive / single template → <code>pages/…/index.astro</code>, <code>[slug].astro</code></li>
+        <li>Template part → component</li>
+        <li><code>save_post</code> → <code>beforeChange</code></li>
+      </ul>
+    </div>
+    <div class="model" style="border-top-color:var(--accent)">
+      <span class="n">Different</span>
+      <ul style="font-size:20px">
+        <li>The content model is a file in git, not rows in a database</li>
+        <li>Types flow from the CMS into the frontend</li>
+        <li>The frontend has no database and no credentials</li>
+        <li>No template hierarchy: the folder is the URL</li>
+        <li>npm packages in <code>package.json</code> instead of plugins</li>
+      </ul>
+    </div>
+    <div class="model" style="border-top-color:var(--sp)">
+      <span class="n">New, no WordPress name</span>
+      <ul style="font-size:20px">
+        <li><code>depth</code>: how far relationships are populated</li>
+        <li>Generated types, and the <code>number | Service</code> guard</li>
+        <li>Global vs collection: one document vs a list</li>
+        <li>SSR vs SSG: per request, or built once</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 20 -->
+<section class="slide" data-time="19:00 – 24:00">
+  <div class="eyebrow"><span class="dot m3"></span>Part 2 · prerequisites<span class="time">19 – 24 min</span></div>
+  <h2>Prerequisites</h2>
+  <div class="two">
+    <div class="col">
+      <dl class="kv">
+        <dt>runtime</dt><dd>Node 22+ <span style="color:var(--muted)">(<code>node -v</code>)</span></dd>
+        <dt>packages</dt><dd>pnpm 9+ <span style="color:var(--muted)">(<code>corepack enable</code>)</span></dd>
+        <dt>vcs</dt><dd>git, and <code>jq</code> for the safety hooks</dd>
+        <dt>editor</dt><dd>VS Code + the Astro extension</dd>
+        <dt>assistant</dt><dd>Claude Code, logged in with your Teams seat</dd>
+        <dt>knowledge</dt><dd>PHP and HTML. TypeScript basics help, but are not required.</dd>
+      </dl>
+    </div>
+    <div class="col">
+<pre>git clone …/astro-payload-workshop.git
+cd astro-payload-workshop
+pnpm install
+pnpm setup      <span class="c"># .env files, git hooks, types, seed</span>
+pnpm doctor     <span class="c"># every line ✔</span>
+pnpm dev        <span class="c"># cms :3300, web :4321</span>
+
+<span class="y">pnpm verify 0</span>   <span class="c"># the first gate</span></pre>
+      <div class="callout"><code>pnpm verify 0</code> must pass before step 1. Each ✘ line names the failing check and the fix.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 21 -->
+<section class="slide" data-time="19:00 – 24:00">
+  <div class="eyebrow"><span class="dot m3"></span>Part 2 · how you will work<span class="time">19 – 24 min</span></div>
+  <h2>Working rules, enforced by the gate</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><div><h3>Plan mode first</h3><p><kbd>Shift+Tab</kbd> before anything that touches more than one file. You see the plan, then the diff.</p></div></div>
+    <div class="step"><span class="n">2</span><div><h3>Read every diff before you accept</h3><p>Which files changed, and did I ask for all of them? What breaks without this? Could I do it by hand tomorrow?</p></div></div>
+    <div class="step"><span class="n">3</span><div><h3>Ticket-style prompts</h3><p>Paste the step from the brief, acceptance criteria included. Underspecified prompts produce underspecified diffs.</p></div></div>
+    <div class="step"><span class="n">4</span><div><h3>Commit only when the gate is green</h3><p><code>pnpm verify N</code>, then the exact message with its <code>(step N)</code> tag. The commit hooks refuse a tagged commit while the step is red.</p></div></div>
+    <div class="step"><span class="n">5</span><div><h3>Ask for the explanation</h3><p>Anything you could not reproduce by hand tomorrow, ask "why" until you could.</p></div></div>
+    <div class="step"><span class="n">!</span><div><h3>Never bypass the hooks</h3><p>Never edit <code>.claude/hooks</code>, <code>scripts/verify.mjs</code> or <code>.env</code>, never add <code>--no-verify</code>. If Claude proposes that as the fix, the fix is wrong.</p></div></div>
+  </div>
+</section>
+
+<!-- 22 -->
+<section class="slide" data-time="19:00 – 24:00">
+  <div class="eyebrow"><span class="dot m3"></span>Part 2 · what the repo already gives you<span class="time">19 – 24 min</span></div>
+  <h2>What is already in the repo</h2>
+  <div class="two">
+    <div class="col">
+      <dl class="kv" style="font-size:19px;gap:10px 20px">
+        <dt><span class="tag kit">CLAUDE.md</span></dt><dd>The layout, commands, conventions and the vocabulary map. What Claude reads every session. Read it once.</dd>
+        <dt><span class="tag kit">skills</span></dt><dd><code>/payload-new-collection projects</code> for step 1, <code>/payload-new-global profile</code> for step 5. Run them, then read what they made.</dd>
+        <dt><span class="tag kit">hooks</span></dt><dd>Refuse edits to <code>.env</code>, secrets and generated files, and dangerous commands. A blocked action means the change was wrong, not the hook.</dd>
+        <dt><span class="tag y">verify</span></dt><dd><code>pnpm verify N</code> is the gate. <code>pnpm verify --status</code> shows where you are. The facilitator checks it during the walk-around.</dd>
+      </dl>
+    </div>
+    <div class="col">
+      <span style="font-family:var(--mono);font-size:16px;color:var(--muted)">copy, do not invent</span>
+      <div class="box" style="padding:14px 18px"><h3 style="font-size:20px"><span class="tag y">Worked example</span>&nbsp; Services</h3><p style="color:var(--muted);font-size:17px"><code>Services.ts</code>, <code>index.astro</code>, <code>services/[slug].astro</code>, <code>ServiceCard.astro</code>. Every step is "like Services, but for Projects".</p></div>
+      <div class="box" style="padding:14px 18px"><h3 style="font-size:20px"><span class="tag">Reference</span>&nbsp; wordpress-reference/</h3><p style="color:var(--muted);font-size:17px">The WordPress portfolio you are porting: CPT, ACF exports, templates, options page, sample SQL. It does not run. It is the spec.</p></div>
+      <div class="box" style="padding:14px 18px"><h3 style="font-size:20px"><span class="tag kit">Installer</span>&nbsp; claude-kit</h3><p style="color:var(--muted);font-size:17px">Installed the hooks, rules, skills and CLAUDE.md. Same layers as the standards deck.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 23 -->
+<section class="slide" data-time="24:00 – 30:00">
+  <div class="eyebrow"><span class="dot m1"></span><span class="dot m2"></span><span class="dot m3"></span>Part 3 · the goal<span class="time">24 – 30 min</span></div>
+  <h2>Target state after 60 minutes</h2>
+  <div class="two">
+    <div class="col">
+      <dl class="kv">
+        <dt>/admin</dt><dd>A <strong>Projects</strong> collection with three projects you built, and a <strong>Profile</strong> global with your name, headline, bio and links</dd>
+        <dt>/projects</dt><dd>Archive page, newest first, one card per project</dd>
+        <dt>/projects/…</dt><dd>Detail page: client, role, stack, highlights, links. 404 on a bad slug</dd>
+        <dt>/about</dt><dd>Your profile, from the global</dd>
+        <dt>/</dt><dd>Services stays as the worked example you copied from, for now</dd>
+      </dl>
+    </div>
+    <div class="col">
+      <div class="callout">Ported from a WordPress portfolio you can read in <code>wordpress-reference/</code>: a Project CPT, its ACF group, three templates and an options page. Same content model, new stack.</div>
+      <div class="box"><h3 style="font-size:22px"><span class="tag sp">Take-home</span>&nbsp; step 7</h3><p style="color:var(--muted);font-size:19px">Make <code>/</code> the home page from the profile and the newest projects. Deploy it. Bring the URL to the follow-up, where we do deployment properly and review the portfolios.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 24 -->
+<section class="slide" data-time="24:00 – 30:00">
+  <div class="eyebrow"><span class="dot m1"></span><span class="dot m2"></span><span class="dot m3"></span>Part 3 · the ladder<span class="time">24 – 30 min</span></div>
+  <h2 style="font-size:44px">The ladder: eight steps, each with a gate</h2>
+  <div class="timeline" style="grid-template-columns:repeat(4,1fr);gap:10px;flex:0 0 auto">
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 0 · before today</span><h3>Prerequisites</h3><p>Tools, servers up, worked example renders. <code>pnpm verify 0</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 1 · 10 min</span><h3>Projects collection</h3><p>CPT + ACF → <code>Projects.ts</code>. Public read, typed. <code>pnpm verify 1</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 2 · 6 min</span><h3>Seed your projects</h3><p>Three real projects, idempotent seed. <code>pnpm verify 2</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 3 · 8 min</span><h3>Archive page</h3><p><code>/projects</code>, newest first, typed card. <code>pnpm verify 3</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 4 · 8 min</span><h3>Detail page</h3><p><code>/projects/[slug]</code>, stats grid, 404. <code>pnpm verify 4</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 5 · 10 min</span><h3>Profile + About</h3><p>Options page → global → <code>/about</code>. <code>pnpm verify 5</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px"><span class="when">Step 6 · 15 min</span><h3>Two stretch cards</h3><p>Image, rich text, SEO, relationship, blocks, hooks. <code>pnpm verify 6</code></p></div>
+    <div class="tl" style="padding:12px 16px;gap:5px;border-color:var(--sp)"><span class="when" style="color:var(--sp)">Step 7 · take-home</span><h3>Home page + deploy</h3><p>Not gated. Due before the follow-up.</p></div>
+  </div>
+  <div class="callout" style="font-size:20px;padding:12px 20px"><code>pnpm verify N</code> runs steps 0 to N in order and stops at the first red. A commit tagged <code>(step N)</code> is refused until N is green.</div>
+</section>
+
+<!-- 25 -->
+<section class="slide" data-time="24:00 – 30:00">
+  <div class="eyebrow"><span class="dot m3"></span>Part 3 · how to run a step<span class="time">24 – 30 min</span></div>
+  <h2>Each step is a ticket: paste it as the prompt</h2>
+  <div class="two">
+    <div class="col">
+<pre style="font-size:16px;line-height:1.45">Create a Payload collection <span class="y">projects</span> in
+apps/cms/src/collections/Projects.ts, following the
+conventions in CLAUDE.md and the pattern in Services.ts.
+
+Fields: title (text, required), slug (text, required,
+unique, sidebar, auto from title), client (text, required),
+role (text, required), summary (textarea, required, max 240),
+projectUrl + repoUrl (text, sidebar),
+completedOn (date, required, sidebar),
+stack (array 1–8 of name:text),
+highlights (array 1–4 of value:text + label:text).
+
+Access: public read, everything else requires a user.
+Admin group "Content", useAsTitle title.
+Register it in payload.config.ts, run pnpm generate:types.
+
+<span class="y">Acceptance:</span> pnpm verify 1 is green.</pre>
+    </div>
+    <div class="col">
+      <div class="step" style="gap:10px"><span class="n" style="font-size:30px">→</span><div><h3 style="font-size:21px">Where</h3><p style="font-size:17px">The exact file. Otherwise Claude picks a path and you review a guess.</p></div></div>
+      <div class="step" style="gap:10px"><span class="n" style="font-size:30px">→</span><div><h3 style="font-size:21px">Pattern to copy</h3><p style="font-size:17px">"Like Services.ts" carries more than a paragraph of prose.</p></div></div>
+      <div class="step" style="gap:10px"><span class="n" style="font-size:30px">→</span><div><h3 style="font-size:21px">What, precisely</h3><p style="font-size:17px">Field names and types, straight from the ACF export.</p></div></div>
+      <div class="step" style="gap:10px"><span class="n" style="font-size:30px">→</span><div><h3 style="font-size:21px">Acceptance criteria</h3><p style="font-size:17px">The gate. Without it there is no definition of done.</p></div></div>
+      <div class="callout q" style="font-size:17px;padding:12px 16px">Green? <code>git commit -m "feat(cms): add projects collection (step 1)"</code></div>
+    </div>
+  </div>
+</section>
+
+<!-- 26 -->
+<section class="slide" data-time="24:00 – 30:00">
+  <div class="eyebrow"><span class="dot none"></span>Part 3 · before you get stuck<span class="time">24 – 30 min</span></div>
+  <h2>Common failures and their causes</h2>
+  <table style="font-size:19px">
+    <thead><tr><th>You see</th><th class="new">It means</th><th>Do</th></tr></thead>
+    <tbody>
+      <tr><td>"Collection not found" from <code>/api/projects</code></td><td class="new">Not registered in <code>payload.config.ts</code></td><td>Add it to the array. Restart the CMS.</td></tr>
+      <tr><td>Astro does not know the <code>Project</code> type</td><td class="new">Types were not regenerated</td><td><code>pnpm generate:types</code>, then restart the Astro language server.</td></tr>
+      <tr><td>Related services render as numbers</td><td class="new">Depth 0, or the <code>number | Service</code> union is unhandled</td><td><code>depth: 1</code> in the query, <code>typeof s === 'object'</code> guard.</td></tr>
+      <tr><td>Every Bash command Claude runs is blocked</td><td class="new"><code>jq</code> is missing and the safety hook fails closed</td><td><code>brew install jq</code>, restart Claude Code. This is why <code>pnpm doctor</code> exists.</td></tr>
+      <tr><td><code>pnpm verify</code> is red on a criterion you think you met</td><td class="new">It is checking the running server, not your file</td><td>Read the <code>→</code> hint line; it names the file or command. Usually: restart the CMS, or regenerate types.</td></tr>
+    </tbody>
+  </table>
+  <p style="color:var(--muted);font-size:19px">The full table is in <code>docs/FACILITATOR_GUIDE.md</code>. Every row has a cause and a fix.</p>
+</section>
+
+<!-- 27 -->
+<section class="slide" data-time="30:00">
+  <div class="eyebrow"><span class="dot none"></span>Go<span class="time">30 min</span></div>
+  <h2>Start: pnpm dev, pnpm verify 0, plan mode</h2>
+  <div class="two">
+    <div class="col">
+      <dl class="kv">
+        <dt>run</dt><dd><span class="big-cmd">pnpm dev</span></dd>
+        <dt>gate</dt><dd><span class="big-cmd">pnpm verify 0</span></dd>
+        <dt>site</dt><dd><code>http://localhost:4321</code></dd>
+        <dt>admin</dt><dd><code>http://localhost:3300/admin</code></dd>
+        <dt>login</dt><dd><code>admin@webee.local</code> / <code>workshop123</code></dd>
+        <dt>brief</dt><dd><code>docs/TASK_BRIEF.md</code></dd>
+        <dt>words</dt><dd><code>docs/GLOSSARY.md</code></dd>
+        <dt>the source</dt><dd><code>wordpress-reference/</code></dd>
+        <dt>stuck</dt><dd>read the <code>→</code> hint line, then ask</dd>
+      </dl>
+    </div>
+    <div class="col">
+      <div class="callout">First prompt, everyone, before anything else:<br><br><em>"Explain the layout of this repo and how apps/web gets data from apps/cms, in five bullet points."</em></div>
+      <p style="color:var(--muted)">Two people read Claude's answer aloud. Then step 1.</p>
+    </div>
+  </div>
+</section>
+
+  <div class="footer"><span>Webee L&amp;D · Astro + Payload with Claude Code</span><span id="counter"></span></div>
+  <div class="progress" id="progress"></div>
+</div>
+</div>
+
+<aside id="notes" hidden><div id="notes-body"></div></aside>
+<div id="help"><b>←</b> <b>→</b> slides &nbsp;·&nbsp; <b>F</b> fullscreen &nbsp;·&nbsp; <b>Home</b>/<b>End</b></div>
+
+<script>
+(function () {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stage = document.getElementById('stage');
+  var counter = document.getElementById('counter');
+  var progress = document.getElementById('progress');
+  var notes = document.getElementById('notes');
+  var notesBody = document.getElementById('notes-body');
+  var i = 0;
+
+  function readHash() {
+    var n = parseInt((location.hash || '').replace('#', ''), 10);
+    return isNaN(n) ? 0 : Math.min(Math.max(n - 1, 0), slides.length - 1);
+  }
+  function show(n) {
+    i = Math.min(Math.max(n, 0), slides.length - 1);
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    counter.textContent = (i + 1) + ' / ' + slides.length + '  ·  ' + (slides[i].getAttribute('data-time') || '');
+    progress.style.width = ((i + 1) / slides.length * 100) + '%';
+    var src = slides[i].querySelector('.notes-src');
+    notesBody.innerHTML = src ? src.innerHTML : '<p>No notes.</p>';
+    if (location.hash !== '#' + (i + 1)) history.replaceState(null, '', '#' + (i + 1));
+    try { localStorage.setItem('wp2astro-slide', String(i)); } catch (e) {}
+  }
+  function fit() {
+    var pad = notes.classList.contains('open') ? 440 : 0;
+    var w = window.innerWidth - pad - 32, h = window.innerHeight - 32;
+    var s = Math.min(w / 1280, h / 720);
+    stage.style.transform = 'scale(' + s + ')';
+    document.getElementById('viewport').style.right = pad + 'px';
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') { show(0); }
+    else if (e.key === 'End') { show(slides.length - 1); }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+    }
+  });
+  stage.addEventListener('click', function (e) {
+    if (e.target.closest('a')) return;
+    var rect = stage.getBoundingClientRect();
+    show(e.clientX - rect.left > rect.width / 2 ? i + 1 : i - 1);
+  });
+  window.addEventListener('hashchange', function () { show(readHash()); });
+  window.addEventListener('resize', fit);
+  var start = location.hash ? readHash() : 0;
+  if (!location.hash) { try { var saved = parseInt(localStorage.getItem('wp2astro-slide'), 10); if (!isNaN(saved)) start = saved; } catch (e) {} }
+  show(start);
+  fit();
+})();
+</script>
