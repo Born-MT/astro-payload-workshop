@@ -1,0 +1,13 @@
+{
+  "name": "workshop-pptx-builder",
+  "private": true,
+  "description": "Regenerates docs/From-WordPress-to-Astro-Payload.pptx from docs/SLIDES.html. Not part of the pnpm workspace on purpose: attendees never install this.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^30.1.1",
+    "pptxgenjs": "^4.0.1"
+  }
+}
