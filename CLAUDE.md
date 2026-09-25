@@ -26,7 +26,7 @@ Starter for the Webee L&D workshop "Astro + Payload with Claude Code". Each atte
 - `apps/cms` — Payload 3 (runs inside Next.js), SQLite, admin at http://localhost:3300/admin, REST at http://localhost:3300/api/<collection> and http://localhost:3300/api/globals/<global>. Only `src/` matters.
 - `apps/web` — Astro 7, server-rendered, http://localhost:4321. Fetches Payload via `src/lib/payload.ts`. Never talks to the DB directly.
 - `wordpress-reference/` — a frozen WordPress portfolio (Project CPT + ACF + theme templates + a Profile options page). Reference only; it does not run. The workshop task is to port it.
-- `docs/` — task brief (the ladder), stretch cards, glossary, facilitator guide, the slide deck (`SLIDES.html` is the source; the `.pptx` is a mirror, keep both in sync).
+- `docs/` — task brief (the ladder), stretch cards, glossary, and the slide deck as shown to attendees (`SLIDES-team.html`, mirrored as the `-team.pptx`). Both deck files are generated on the private `facilitator` branch; do not edit them here.
 - `scripts/verify.mjs` — the gate. `pnpm verify N` runs the acceptance criteria of steps 0..N in order. Step commits carry a tag `(step N)` / `(card X)` and the hooks refuse them until the step is green.
 
 `Services` is the worked example: `apps/cms/src/collections/Services.ts`, `apps/web/src/pages/index.astro`, `apps/web/src/pages/services/[slug].astro`. **Copy its patterns** (public read access, slug hook, typed fetch) for `Projects`. The ladder is in `docs/TASK_BRIEF.md`: 1 Projects collection, 2 seed, 3 archive page, 4 detail page, 5 Profile global + About page, 6 two stretch cards.

@@ -41,7 +41,7 @@ scripts               setup, doctor, verify (the gate)
 3. [docs/GLOSSARY.md](docs/GLOSSARY.md) — every Astro and Payload word, next to its WordPress word
 4. [wordpress-reference/README.md](wordpress-reference/README.md) — WordPress → Payload/Astro file map and vocabulary
 
-Facilitators: [docs/FACILITATOR_GUIDE.md](docs/FACILITATOR_GUIDE.md). The finished version lives on the `solution` branch, one commit per step.
+The finished version lives on the `solution` branch, one commit per step.
 
 The deck: [docs/SLIDES-team.html](docs/SLIDES-team.html) (open it in a browser, `←`/`→` to move, `F` for fullscreen), also as [docs/From-WordPress-to-Astro-Payload-team.pptx](docs/From-WordPress-to-Astro-Payload-team.pptx) for PowerPoint or Google Slides, and published at <https://claude.ai/artifact/DuzGYAeX6zANunxcHSXhTD>. Same 27 slides you saw in the talk.
 

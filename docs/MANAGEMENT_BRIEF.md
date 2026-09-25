@@ -27,7 +27,7 @@ Everything is built and tested. Attendees will not lose time to setup on the day
 - A task brief in the form of a seven-step ladder, each step a ticket with acceptance criteria and an exact commit message, plus seven optional stretch cards.
 - The gate: a verification script that checks each step's criteria against the running site and git history, in order, and commit hooks that refuse a step's commit until it is green. The facilitator can read any attendee's progress with one command.
 - A completed reference solution, committed step by step, for the debrief.
-- A presentation with speaker notes in three parts: WordPress versus Astro + Payload, prerequisites, and the goal ([view it here](https://claude.ai/artifact/EMiU9Cwts4xJ32hqq5KjtN)), including a jargon section that names every Astro and Payload term attendees will meet, each beside its WordPress equivalent.
+- A presentation in three parts: WordPress versus Astro + Payload, prerequisites, and the goal ([view it here](https://claude.ai/artifact/DuzGYAeX6zANunxcHSXhTD)), including a jargon section that names every Astro and Payload term attendees will meet, each beside its WordPress equivalent.
 - A written glossary of the same terms for use during the hands-on and afterwards.
 - A pre-session checklist that ends with the first gate, so every laptop is verified before the day.
 - A facilitator guide with a minute-by-minute plan, the walk-around check, and known failure modes with their fixes.
